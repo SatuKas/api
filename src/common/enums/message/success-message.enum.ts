@@ -1,7 +1,9 @@
+// TECHDEBT: This code still not represent of success process.
 export enum SuccessMessage {
   HEALTH_CHECK = 'Health checked successfully',
-  GET_CURRENT_INPUT = 'Current input mode retrieved successfully',
-  SWITCH_INPUT = 'Input mode switched successfully',
-  CHAT_SUCCESS = 'Chat processed successfully',
-  VOICE_TRANSCRIBE_SUCCESS = 'Voice transcribed successfully',
+  OK = 'Operation completed successfully',
+  CREATED = 'Data created successfully',
+  UPDATED = 'Data updated successfully',
+  DELETED = 'Data deleted successfully',
+  FETCHED = 'Data fetched successfully',
 }

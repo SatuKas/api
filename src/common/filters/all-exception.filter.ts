@@ -4,11 +4,13 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ExceptionMessage } from '../enums/message/exception-message.enum';
 import { AppLogger } from '../logger/logger.service';
 import { loggerMessageFormater } from 'src/shared/utils/logger.utils';
+import { ExceptionResponseMapper } from 'src/common/mappers/exception-response.mapper';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -23,6 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = ExceptionMessage.SERVER_ERROR;
     let errorData = null;
+    let details: Array<Record<string, any>> | undefined = undefined;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -31,12 +34,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (typeof responseObj === 'string') {
         message = responseObj as ExceptionMessage;
       } else if (typeof responseObj === 'object' && responseObj !== null) {
-        message =
-          (responseObj as any).message || (responseObj as any).error || message;
+        if (
+          exception instanceof BadRequestException &&
+          Array.isArray((responseObj as any).message)
+        ) {
+          const validationErrors = (responseObj as any).message;
+          details = validationErrors;
+          message = ExceptionMessage.BAD_REQUEST;
+        } else {
+          message =
+            (responseObj as any).message ||
+            (responseObj as any).error ||
+            message;
+        }
         errorData = responseObj as any;
       }
     } else if (exception instanceof Error) {
       message = exception.message as ExceptionMessage;
+      errorData = exception.stack as any;
     }
 
     this.logger.error(
@@ -49,12 +64,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }),
     );
 
-    response.status(status).json({
-      status: 'error',
+    // TECHDEBT: This mapper still can't remapping default http exception message.
+    // Send user-friendly response
+    const errorResponse = ExceptionResponseMapper.mapException(
+      status,
+      request.url,
+      details,
       message,
-      data: errorData,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-    });
+      undefined,
+    );
+
+    response.status(status).json(errorResponse);
   }
 }

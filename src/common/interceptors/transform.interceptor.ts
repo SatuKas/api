@@ -7,6 +7,7 @@ import {
 import { ApiResponse } from 'src/types/api-response.type';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { SuccessResponseMapper } from 'src/common/mappers/success-response.mapper';
 
 @Injectable()
 export class TransformInterceptor<T>
@@ -17,11 +18,19 @@ export class TransformInterceptor<T>
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
-      map((data: any) => ({
-        status: 'success',
-        message: data?.message ?? null,
-        data: data?.data ?? data,
-      })),
+      map((data: any) => {
+        // If data already has status 'error', return as is (from exception filter)
+        if (data?.status === 'error') {
+          return data;
+        }
+
+        // Map success response
+        return SuccessResponseMapper.mapSuccess(
+          data?.data ?? data,
+          data?.message,
+          data?.code,
+        );
+      }),
     );
   }
 }

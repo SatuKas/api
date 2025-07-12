@@ -1,3 +1,4 @@
+// TECHDEBT: Need to decide what codes to use for each exception. Create custom codes to represent each error.
 export enum ExceptionCode {
   UNAUTHORIZED = 'UNAUTHORIZED_USER',
   FORBIDDEN = 'FORBIDDEN_ACCESS',
