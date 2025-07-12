@@ -2,7 +2,10 @@ import { Injectable, Scope } from '@nestjs/common';
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { LoggerEnum } from '../enums/logger/logger.enum';
-import { loggerFormatter } from 'src/shared/utils/logger.utils';
+import {
+  loggerFormatter,
+  loggerConsoleFormatter,
+} from 'src/shared/utils/logger.utils';
 import configuration from 'src/config/env.config';
 
 @Injectable({ scope: Scope.TRANSIENT })
@@ -29,13 +32,15 @@ export class AppLogger {
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.printf(({ timestamp, level, message }) => {
-              return loggerFormatter({
+            winston.format.timestamp({
+              format: LoggerEnum.LOGGER_TIMESTAMP_FORMAT,
+            }),
+            winston.format.printf(({ timestamp, level, message, context }) => {
+              return loggerConsoleFormatter({
                 timestamp: timestamp as string,
                 level,
                 message: message as string,
-                context: this.context,
+                context: (context as string) || this.context,
               });
             }),
           ),
@@ -93,5 +98,9 @@ export class AppLogger {
 
   debug(message: any) {
     this.logger.debug(this.formatMessage(message));
+  }
+
+  log(level: string, message: any) {
+    this.logger.log(level, this.formatMessage(message));
   }
 }

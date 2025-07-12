@@ -3,14 +3,24 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import 'winston-daily-rotate-file';
 import configuration from '../../config/env.config';
 import { LoggerEnum } from '../enums/logger/logger.enum';
-import { loggerFormatter } from 'src/shared/utils/logger.utils';
+import {
+  loggerFormatter,
+  loggerConsoleFormatter,
+} from 'src/shared/utils/logger.utils';
 export const createWinstonLoggerConfig = () => {
   const transports: winston.transport[] = [
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.colorize(),
-        nestWinstonModuleUtilities.format.nestLike('NAYA', {
-          prettyPrint: true,
+        winston.format.timestamp({
+          format: LoggerEnum.LOGGER_TIMESTAMP_FORMAT,
+        }),
+        winston.format.printf(({ timestamp, level, message, context }) => {
+          return loggerConsoleFormatter({
+            timestamp: timestamp as string,
+            level: level,
+            message: message as string,
+            context: context as string,
+          });
         }),
       ),
     }),
@@ -38,11 +48,12 @@ export const createWinstonLoggerConfig = () => {
     level: 'info',
     format: winston.format.combine(
       winston.format.timestamp({ format: LoggerEnum.LOGGER_TIMESTAMP_FORMAT }),
-      winston.format.printf(({ timestamp, level, message }) => {
+      winston.format.printf(({ timestamp, level, message, context }) => {
         return loggerFormatter({
           timestamp: timestamp as string,
           level,
           message: message as string,
+          context: context as string,
         });
       }),
     ),
