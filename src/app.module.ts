@@ -2,8 +2,6 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 
-import { AppController } from 'src/app.controller';
-import { AppService } from 'src/app.service';
 import { RequestLoggerMiddleware } from 'src/common/middleware/request-logger.middleware';
 import { AppLogger } from 'src/common/logger/logger.service';
 import configuration from 'src/config/env.config';
@@ -29,8 +27,8 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, AppLogger, PrismaService],
+  controllers: [],
+  providers: [AppLogger, PrismaService],
   exports: [PrismaService],
 })
 export class AppModule implements NestModule {
