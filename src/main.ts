@@ -9,6 +9,8 @@ import { AllExceptionsFilter } from 'src/common/filters/all-exception.filter';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { HttpLoggerInterceptor } from 'src/common/interceptors/http-logger.interceptor';
 import { JwtAuthGuard } from 'src/modules/auth/guard/jwt-auth.guard';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -34,6 +36,23 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+
+  const config = new DocumentBuilder()
+    .setTitle('API Server Docs')
+    .setDescription('API Server Docs')
+    .setVersion('1.0')
+    .addTag('docs')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, documentFactory, {
+    jsonDocumentUrl: 'swagger/json',
+  });
+  app.use(
+    '/docs',
+    apiReference({
+      content: documentFactory,
+    }),
+  );
 
   await app.listen(configuration().port, () => {
     logger.setContext('AppConsole');
