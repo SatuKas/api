@@ -7,6 +7,7 @@ const envValidationSchema = Joi.object({
     .default('development'),
   LOG_TO_FILE: Joi.boolean().default(false),
   DATABASE_URL: Joi.string().required(),
+  JWT_ACCESS_SECRET: Joi.string().required(),
 });
 
 export default envValidationSchema;
