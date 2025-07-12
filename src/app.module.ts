@@ -12,6 +12,7 @@ import { createWinstonLoggerConfig } from 'src/common/logger/winston-logger';
 import { HealthModule } from 'src/modules/health/health.module';
 import { PrismaService } from 'src/database/prisma.service';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     HealthModule,
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppLogger, PrismaService],
