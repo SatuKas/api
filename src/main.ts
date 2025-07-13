@@ -8,7 +8,7 @@ import { AppLogger } from 'src/common/logger/logger.service';
 import { AllExceptionsFilter } from 'src/common/filters/all-exception.filter';
 import { TransformInterceptor } from 'src/common/interceptors/transform.interceptor';
 import { HttpLoggerInterceptor } from 'src/common/interceptors/http-logger.interceptor';
-import { JwtAuthGuard } from 'src/modules/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 

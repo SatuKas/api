@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
+import { AuthService } from '../services/auth.service';
 import { PrismaService } from 'src/database/prisma.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
 import { AuthEnum } from 'src/common/enums/auth/auth.enum';
 
