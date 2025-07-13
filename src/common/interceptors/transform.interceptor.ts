@@ -19,6 +19,14 @@ export class TransformInterceptor<T>
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
       map((data: any) => {
+        // Skip transform for HTML responses
+        const response = context.switchToHttp().getResponse();
+        const contentType = response.getHeader('Content-Type');
+
+        if (contentType?.includes('text/html')) {
+          return data; // ← Return as-is untuk HTML
+        }
+
         // If data already has status 'error', return as is (from exception filter)
         if (data?.status === 'error') {
           return data;
@@ -26,7 +34,7 @@ export class TransformInterceptor<T>
 
         // Map success response
         return SuccessResponseMapper.mapSuccess(
-          data?.data ?? data,
+          data?.data,
           data?.message,
           data?.code,
         );
