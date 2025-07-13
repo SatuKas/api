@@ -13,6 +13,7 @@ import {
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller(Routes.AUTH)
 export class AuthController {
@@ -83,11 +84,11 @@ export class AuthController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post(Routes.AUTH_LOGOUT)
-  async logout(@Req() req): Promise<ResponseData<null>> {
-    const userId = req.user.sub;
-    const deviceId = req.user.device_id;
+  async logout(
+    @CurrentUser('sub') userId: string,
+    @CurrentUser('device_id') deviceId: string,
+  ): Promise<ResponseData<null>> {
     await this.authService.logout({
       device_id: deviceId,
       user_id: userId,
