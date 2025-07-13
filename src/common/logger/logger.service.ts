@@ -5,7 +5,7 @@ import { LoggerEnum } from '../enums/logger/logger.enum';
 import {
   loggerFormatter,
   loggerConsoleFormatter,
-} from 'src/shared/utils/logger.utils';
+} from 'src/shared/utils/logger.util';
 import configuration from 'src/config/env.config';
 
 @Injectable({ scope: Scope.TRANSIENT })

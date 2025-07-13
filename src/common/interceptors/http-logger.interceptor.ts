@@ -7,7 +7,7 @@ import {
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { AppLogger } from '../logger/logger.service';
 import { LoggerEnum } from '../enums/logger/logger.enum';
-import { loggerMessageFormater } from 'src/shared/utils/logger.utils';
+import { loggerMessageFormater } from 'src/shared/utils/logger.util';
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
   private readonly logger = new AppLogger();

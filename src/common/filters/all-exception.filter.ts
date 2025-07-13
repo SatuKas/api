@@ -9,7 +9,7 @@ import {
 import { Request, Response } from 'express';
 import { ExceptionMessage } from '../enums/message/exception-message.enum';
 import { AppLogger } from '../logger/logger.service';
-import { loggerMessageFormater } from 'src/shared/utils/logger.utils';
+import { loggerMessageFormater } from 'src/shared/utils/logger.util';
 import { ExceptionResponseMapper } from 'src/common/mappers/exception-response.mapper';
 
 @Catch()
