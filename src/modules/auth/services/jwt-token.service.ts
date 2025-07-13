@@ -31,6 +31,13 @@ export class JwtTokenService {
     });
   }
 
+  generateEmailToken(payload: JwtTokenPayload) {
+    return this.jwtService.sign(payload, {
+      secret: configuration().jwtEmailSecret,
+      expiresIn: AuthEnum.JWT_EMAIL_EXPIRES_IN,
+    });
+  }
+
   async generateTokenPair(payload: JwtTokenPayload): Promise<JwtTokenResponse> {
     const [accessToken, refreshToken] = await Promise.all([
       this.generateAccessToken(payload),
@@ -47,9 +54,9 @@ export class JwtTokenService {
     };
   }
 
-  async verifyToken(token: string): Promise<JwtTokenPayload> {
+  async verifyToken(token: string, secret?: string): Promise<JwtTokenPayload> {
     return this.jwtService.verifyAsync(token, {
-      secret: configuration().jwtAccessSecret,
+      secret: secret || configuration().jwtAccessSecret,
     });
   }
 
