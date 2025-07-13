@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
@@ -7,7 +12,16 @@ import { ExceptionMessage } from 'src/common/enums/message/exception-message.enu
 import { JwtTokenService } from 'src/modules/auth/services/jwt-token.service';
 import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 import { AuthDeviceService } from 'src/modules/auth/services/auth-device.service';
-import { LogoutPayload } from '../auth.interfaces';
+import { LogoutPayload } from 'src/modules/auth/auth.interfaces';
+import configuration from 'src/config/env.config';
+import {
+  MailerSubject,
+  VerifyEmailPath,
+} from 'src/common/enums/mailer/mailer.enum';
+import { replaceString } from 'src/shared/utils/string.util';
+import { MailerService } from 'src/shared/mailer/mailer.service';
+import { verifyEmailTemplate } from 'src/shared/mailer/templates/verify-email.template';
+import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +29,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtTokenService: JwtTokenService,
     private authDeviceService: AuthDeviceService,
+    private mailerService: MailerService,
   ) {}
 
   private async registerDevice(payload: {
@@ -75,6 +90,8 @@ export class AuthService {
       ip: ip,
       user_agent: userAgent,
     });
+
+    await this.sendEmailVerification(user.id, user.email, user.name);
 
     return {
       user,
@@ -149,5 +166,127 @@ export class AuthService {
       payload.device_id,
       payload.user_id,
     );
+  }
+
+  private getVerifyUrl(token: string) {
+    const baseUrl =
+      configuration().verificationProcessVia === 'frontend'
+        ? configuration().frontendUrl
+        : configuration().backendUrl;
+    const path =
+      configuration().verificationProcessVia === 'frontend'
+        ? VerifyEmailPath.FRONTEND
+        : VerifyEmailPath.BACKEND;
+    const verifyUrlPath = replaceString(path, { ':token': token });
+    return `${baseUrl}${verifyUrlPath}`;
+  }
+
+  private async sendEmailVerification(
+    userId: string,
+    email: string,
+    name: string,
+  ) {
+    const token = this.jwtTokenService.generateEmailToken({
+      sub: userId,
+      email: email,
+      device_id: '',
+    });
+
+    const verifyUrl = this.getVerifyUrl(token);
+
+    await this.mailerService.sendMail(
+      email,
+      MailerSubject.VERIFY_EMAIL,
+      verifyEmailTemplate(name, verifyUrl),
+    );
+  }
+
+  async verifyEmail(token: string) {
+    try {
+      const payload = await this.jwtTokenService.verifyToken(
+        token,
+        configuration().jwtEmailSecret,
+      );
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
+      if (user.isVerified)
+        throw new BadRequestException(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
+
+      await this.prisma.user.update({
+        where: { id: payload.sub },
+        data: { isVerified: true, verifiedAt: new Date() },
+      });
+
+      return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
+    } catch (err) {
+      throw new UnauthorizedException(
+        ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED,
+      );
+    }
+  }
+
+  async resendVerification(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
+    if (user.isVerified)
+      throw new BadRequestException(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
+
+    await this.sendEmailVerification(user.id, user.email, user.name);
+
+    return { message: SuccessMessage.VERIFICATION_EMAIL_RESEND_SUCCESS };
+  }
+
+  async verifyEmailViaBackend(token: string): Promise<string> {
+    try {
+      const payload = await this.jwtTokenService.verifyToken(
+        token,
+        configuration().jwtEmailSecret,
+      );
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user) return this.buildHtml(ExceptionMessage.USER_NOT_FOUND);
+      if (user.isVerified)
+        return this.buildHtml(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          isVerified: true,
+          verifiedAt: new Date(),
+        },
+      });
+
+      return this.buildHtml(SuccessMessage.EMAIL_VERIFIED_SUCCESS);
+    } catch (err) {
+      return this.buildHtml(ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED);
+    }
+  }
+
+  private buildHtml(message: string): string {
+    return `
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Verifikasi Email</title>
+      </head>
+      <body style="background-color: #f4f4f4; font-family: sans-serif; padding: 48px; text-align: center;">
+        <div style="max-width: 480px; margin: auto; background: #fff; border-radius: 8px; padding: 32px; box-shadow: 0 0 8px rgba(0,0,0,0.05);">
+          <h2 style="color: #2d87f0;">${message}</h2>
+          <p style="margin-top: 24px; font-size: 14px; color: #888;">
+            You can close this page.
+          </p>
+        </div>
+      </body>
+    </html>
+    `;
   }
 }

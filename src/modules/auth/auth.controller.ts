@@ -1,6 +1,18 @@
-import { Controller, Post, Body, Req, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Param,
+  Get,
+  Header,
+} from '@nestjs/common';
 import { AuthService } from './services/auth.service';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  RegisterDto,
+  VerifyEmailDto,
+} from 'src/modules/auth/dto/auth.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { Routes } from 'src/common/enums/routes/routes.enum';
 import { ResponseData } from 'src/types/api-response.type';
@@ -8,9 +20,9 @@ import {
   LoginResponse,
   RefreshTokenResponse,
   RegisterResponse,
-} from './auth.interfaces';
+} from 'src/modules/auth/auth.interfaces';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller(Routes.AUTH)
@@ -109,5 +121,34 @@ export class AuthController {
       message: SuccessMessage.LOGOUT_SUCCESS,
       data: null,
     };
+  }
+
+  @Public()
+  @Post(Routes.AUTH_EMAIL_VERIFY)
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<ResponseData<null>> {
+    const verifyData = await this.authService.verifyEmail(dto.token);
+    return {
+      message: verifyData.message,
+      data: null,
+    };
+  }
+
+  @Post(Routes.AUTH_RESEND_VERIFICATION)
+  async resendVerification(
+    @CurrentUser('sub') userId: string,
+  ): Promise<ResponseData<null>> {
+    const resendData = await this.authService.resendVerification(userId);
+    return {
+      message: resendData.message,
+      data: null,
+    };
+  }
+
+  @Public()
+  @Get(Routes.AUTH_VERIFY_EMAIL_FROM_LINK)
+  @Header('Content-Type', 'text/html')
+  async verifyEmailFromLink(@Param('token') token: string) {
+    const html = await this.authService.verifyEmailViaBackend(token);
+    return html;
   }
 }
