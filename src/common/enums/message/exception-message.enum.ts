@@ -11,4 +11,6 @@ export enum ExceptionMessage {
   INVALID_REFRESH_TOKEN_DEVICE = 'Invalid refresh token device',
   INVALID_REFRESH_TOKEN = 'Invalid refresh token',
   TOKEN_REVOKED_OR_EXPIRED = 'Token revoked or expired',
+  USER_NOT_FOUND = 'User not found',
+  EMAIL_ALREADY_VERIFIED = 'Email already verified',
 }

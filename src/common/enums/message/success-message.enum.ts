@@ -10,4 +10,6 @@ export enum SuccessMessage {
   LOGIN_SUCCESS = 'User logged in successfully',
   REFRESH_TOKEN_SUCCESS = 'Refresh token generated successfully',
   LOGOUT_SUCCESS = 'User logged out successfully',
+  EMAIL_VERIFIED_SUCCESS = 'Email verified successfully',
+  VERIFICATION_EMAIL_RESEND_SUCCESS = 'Email verification resend successfully',
 }
