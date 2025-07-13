@@ -4,6 +4,10 @@ const configuration = () => ({
   logToFile: process.env.LOG_TO_FILE?.toLowerCase() === 'true',
   databaseUrl: process.env.DATABASE_URL,
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
+  redisHost: process.env.REDIS_HOST || 'localhost',
+  redisPort: parseInt(process.env.REDIS_PORT ?? '6379', 10),
+  redisUsername: process.env.REDIS_USERNAME,
+  redisPassword: process.env.REDIS_PASSWORD,
   // bisa ditambahin config lain di sini
 });
 

@@ -8,6 +8,10 @@ const envValidationSchema = Joi.object({
   LOG_TO_FILE: Joi.boolean().default(false),
   DATABASE_URL: Joi.string().required(),
   JWT_ACCESS_SECRET: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().required(),
+  REDIS_USERNAME: Joi.string(),
+  REDIS_PASSWORD: Joi.string(),
 });
 
 export default envValidationSchema;
