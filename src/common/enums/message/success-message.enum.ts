@@ -6,4 +6,7 @@ export enum SuccessMessage {
   UPDATED = 'Data updated successfully',
   DELETED = 'Data deleted successfully',
   FETCHED = 'Data fetched successfully',
+  REGISTER_SUCCESS = 'User registered successfully',
+  LOGIN_SUCCESS = 'User logged in successfully',
+  REFRESH_TOKEN_SUCCESS = 'Refresh token generated successfully',
 }

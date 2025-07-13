@@ -45,6 +45,7 @@ export class ExceptionResponseMapper {
       'module',
       'require',
       'import',
+      'json',
     ];
 
     const lowerMessage = message.toLowerCase();
