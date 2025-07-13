@@ -4,6 +4,11 @@ export interface JwtTokenPayload {
   device_id: string;
 }
 
+export interface LogoutPayload {
+  device_id: string;
+  user_id?: string;
+}
+
 export interface RegisterAuthDevicePayload {
   id: string;
   user_id: string;
@@ -14,7 +19,8 @@ export interface RegisterAuthDevicePayload {
 
 export interface UpdateAuthDevicePayload {
   id: string;
-  refresh_token: string;
+  refresh_token: string | null;
+  is_revoked?: boolean;
 }
 
 export interface LoginResponse {

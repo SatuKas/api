@@ -8,6 +8,7 @@ import { ExceptionMessage } from 'src/common/enums/message/exception-message.enu
 import { JwtTokenService } from 'src/modules/auth/services/jwt-token.service';
 import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
 import { AuthDeviceService } from 'src/modules/auth/services/auth-device.service';
+import { LogoutPayload } from '../auth.interfaces';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +38,7 @@ export class AuthService {
       user_id: payload.user_id,
       user_agent: payload.user_agent,
       ip_address: payload.ip,
-      refresh_token: tokens.refresh_token,
+      refresh_token: tokens.hashed_refresh_token,
     });
 
     return tokens;
@@ -103,9 +104,10 @@ export class AuthService {
   async refreshToken(dto: RefreshTokenDto) {
     const decoded = await this.jwtTokenService.decodeToken(dto.refresh_token);
 
-    const device = await this.authDeviceService.getDeviceByDeviceId(
+    const device = await this.authDeviceService.getDeviceById(
       decoded.device_id,
       decoded.sub,
+      false,
     );
 
     if (!device || !device.refreshToken) {
@@ -113,13 +115,13 @@ export class AuthService {
         ExceptionMessage.INVALID_REFRESH_TOKEN_DEVICE,
       );
     }
-    const hashedRefreshTokenDto = await bcrypt.hash(dto.refresh_token, 10);
     const isValidToken = this.jwtTokenService.verifyToken(dto.refresh_token);
 
     const isValid = await bcrypt.compare(
-      hashedRefreshTokenDto,
+      dto.refresh_token,
       device.refreshToken,
     );
+
     if (!isValid || !isValidToken)
       throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
 
@@ -137,9 +139,16 @@ export class AuthService {
 
     await this.authDeviceService.updateAuthDevice({
       id: decoded.device_id,
-      refresh_token: tokens.refresh_token,
+      refresh_token: tokens.hashed_refresh_token,
     });
 
     return tokens;
+  }
+
+  async logout(payload: LogoutPayload) {
+    await this.authDeviceService.revokeDevice(
+      payload.device_id,
+      payload.user_id,
+    );
   }
 }

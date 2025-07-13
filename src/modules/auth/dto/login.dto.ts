@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsString, IsUUID } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
@@ -6,4 +6,9 @@ export class LoginDto {
 
   @IsString()
   password: string;
+}
+
+export class LogoutByDeviceIdDto {
+  @IsUUID()
+  device_id: string;
 }

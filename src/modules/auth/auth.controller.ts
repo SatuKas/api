@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Param } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto, LogoutByDeviceIdDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { Routes } from 'src/common/enums/routes/routes.enum';
 import { ResponseData } from 'src/types/api-response.type';
@@ -12,6 +12,7 @@ import {
 } from './auth.interfaces';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller(Routes.AUTH)
 export class AuthController {
@@ -79,6 +80,35 @@ export class AuthController {
     return {
       message: SuccessMessage.REFRESH_TOKEN_SUCCESS,
       data: refreshTokenResponse,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(Routes.AUTH_LOGOUT)
+  async logout(@Req() req): Promise<ResponseData<null>> {
+    const userId = req.user.sub;
+    const deviceId = req.user.device_id;
+    await this.authService.logout({
+      device_id: deviceId,
+      user_id: userId,
+    });
+    return {
+      message: SuccessMessage.LOGOUT_SUCCESS,
+      data: null,
+    };
+  }
+
+  @Public()
+  @Post(Routes.AUTH_LOGOUT_BY_DEVICE_ID)
+  async logoutByDeviceId(
+    @Param('device_id') deviceId: string,
+  ): Promise<ResponseData<null>> {
+    await this.authService.logout({
+      device_id: deviceId,
+    });
+    return {
+      message: SuccessMessage.LOGOUT_SUCCESS,
+      data: null,
     };
   }
 }

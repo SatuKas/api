@@ -9,4 +9,5 @@ export enum SuccessMessage {
   REGISTER_SUCCESS = 'User registered successfully',
   LOGIN_SUCCESS = 'User logged in successfully',
   REFRESH_TOKEN_SUCCESS = 'Refresh token generated successfully',
+  LOGOUT_SUCCESS = 'User logged out successfully',
 }

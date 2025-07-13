@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import Redis from 'ioredis';
 import { AuthEnum } from 'src/common/enums/auth/auth.enum';
 import configuration from 'src/config/env.config';
 import { PrismaService } from 'src/database/prisma.service';
@@ -13,7 +14,7 @@ import {
 export class JwtTokenService {
   constructor(
     private jwtService: JwtService,
-    private prisma: PrismaService,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
   async generateAccessToken(payload: JwtTokenPayload): Promise<string> {
@@ -76,5 +77,19 @@ export class JwtTokenService {
       default:
         return 3600; // 1 hour default
     }
+  }
+
+  async revokeToken(token: string) {
+    await this.redis.set(
+      `bl:${token}`,
+      '1',
+      'EX',
+      this.getExpiresIn(AuthEnum.JWT_EXPIRES_IN),
+    );
+  }
+
+  async isBlacklisted(token: string): Promise<boolean> {
+    const result = await this.redis.get(`bl:${token}`);
+    return result === '1';
   }
 }

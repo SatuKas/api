@@ -10,4 +10,5 @@ export enum ExceptionMessage {
   USERNAME_ALREADY_TAKEN = 'Username already taken',
   INVALID_REFRESH_TOKEN_DEVICE = 'Invalid refresh token device',
   INVALID_REFRESH_TOKEN = 'Invalid refresh token',
+  TOKEN_REVOKED_OR_EXPIRED = 'Token revoked or expired',
 }
