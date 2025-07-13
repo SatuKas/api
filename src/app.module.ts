@@ -11,7 +11,7 @@ import { HealthModule } from 'src/modules/health/health.module';
 import { PrismaService } from 'src/database/prisma.service';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { RedisModule } from './shared/utils/redis/redis.module';
+import { RedisModule } from './shared/redis/redis.module';
 
 @Module({
   imports: [
