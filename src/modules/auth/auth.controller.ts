@@ -1,7 +1,6 @@
-import { Controller, Post, Body, Req, UseGuards, Param } from '@nestjs/common';
+import { Controller, Post, Body, Req, Param } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto, LogoutByDeviceIdDto } from './dto/login.dto';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { Routes } from 'src/common/enums/routes/routes.enum';
 import { ResponseData } from 'src/types/api-response.type';
@@ -12,7 +11,6 @@ import {
 } from './auth.interfaces';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller(Routes.AUTH)
