@@ -12,6 +12,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './shared/redis/redis.module';
+import { MailerModule } from './shared/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RedisModule } from './shared/redis/redis.module';
     UserModule,
     AuthModule,
     RedisModule,
+    MailerModule,
   ],
   controllers: [],
   providers: [AppLogger, PrismaService],

@@ -6,12 +6,22 @@ const envValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   LOG_TO_FILE: Joi.boolean().default(false),
+  APP_NAME: Joi.string().required(),
   DATABASE_URL: Joi.string().required(),
   JWT_ACCESS_SECRET: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
   REDIS_USERNAME: Joi.string(),
   REDIS_PASSWORD: Joi.string(),
+  MAIL_DRIVER: Joi.string().valid('smtp', 'resend').required(),
+  SMTP_HOST: Joi.string(),
+  SMTP_PORT: Joi.number(),
+  SMTP_FROM: Joi.string(),
+  SMTP_USERNAME: Joi.string(),
+  SMTP_PASSWOD: Joi.string(),
+  RESEND_API_URL: Joi.string(),
+  RESEND_FROM: Joi.string(),
+  RESEND_API_KEY: Joi.string(),
 });
 
 export default envValidationSchema;
