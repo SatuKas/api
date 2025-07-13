@@ -16,7 +16,7 @@ export class ResendMailer implements MailerDriver {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          Authorization: `Bearer ${configuration().resendApiKey}`,
           'Content-Type': 'application/json',
         },
       },

@@ -1,8 +1,9 @@
+import { MailerTitle } from 'src/common/enums/mailer/mailer.enum';
 import { baseLayout } from './base.layout';
 
 export const verifyEmailTemplate = (name: string, link: string) => {
   const content = `
-    <h2 style="margin-top: 0; color: #2d87f0;">Verifikasi Email Kamu</h2>
+    <h2 style="margin-top: 0; color: #2d87f0;">Verify your email!</h2>
     <p>Hi ${name},</p>
     <p>To activate your account, please click the button below:</p>
     <p style="text-align: center; margin: 24px 0;">
@@ -14,5 +15,5 @@ export const verifyEmailTemplate = (name: string, link: string) => {
     <p style="margin-top: 32px;">Thank you,<br><strong>Your App Team</strong></p>
   `;
 
-  return baseLayout('Verify Your Email', content);
+  return baseLayout(MailerTitle.VERIFY_EMAIL, content);
 };

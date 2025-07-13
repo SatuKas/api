@@ -1,3 +1,4 @@
+import { MailerTitle } from 'src/common/enums/mailer/mailer.enum';
 import { baseLayout } from './base.layout';
 
 export const welcomeEmailTemplate = (name: string) => {
@@ -9,5 +10,5 @@ export const welcomeEmailTemplate = (name: string) => {
     <p style="margin-top: 32px;">Happy exploring!<br><strong>Your App Team</strong></p>
   `;
 
-  return baseLayout('Welcome to Our App!', content);
+  return baseLayout(MailerTitle.WELCOME, content);
 };
