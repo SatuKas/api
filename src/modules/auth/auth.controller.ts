@@ -161,14 +161,16 @@ export class AuthController {
   @Public()
   @Get(Routes.AUTH_VERIFY_EMAIL_FROM_LINK)
   @Header('Content-Type', 'text/html')
-  async verifyEmailFromLink(@Param('token') token: string) {
+  async verifyEmailFromLink(@Param('token') token: string): Promise<string> {
     const html = await this.authService.verifyEmailViaBackend(token);
     return html;
   }
 
   @Public()
   @Post(Routes.AUTH_FORGOT_PASSWORD)
-  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<ResponseData<null>> {
     await this.authService.forgotPassword(dto);
 
     return { message: SuccessMessage.FORGOT_PASSWORD_SUCCESS, data: null };
@@ -176,7 +178,9 @@ export class AuthController {
 
   @Public()
   @Post(Routes.AUTH_RESET_PASSWORD)
-  async resetPassword(@Body() dto: ResetPasswordDto) {
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<ResponseData<null>> {
     await this.authService.resetPassword(dto);
 
     return { message: SuccessMessage.RESET_PASSWORD_SUCCESS, data: null };
