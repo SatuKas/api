@@ -9,8 +9,10 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import {
+  ForgotPasswordDto,
   LoginDto,
   RegisterDto,
+  ResetPasswordDto,
   VerifyEmailDto,
 } from 'src/modules/auth/dto/auth.dto';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -41,8 +43,12 @@ export class AuthController {
     const registerResponse: RegisterResponse = {
       id: registerData.user.id,
       token: {
-        access_token: registerData.tokens.access_token,
-        refresh_token: registerData.tokens.refresh_token,
+        access_token: registerData.tokens.token.access_token,
+        refresh_token: registerData.tokens.token.refresh_token,
+      },
+      expires: {
+        access_token: registerData.tokens.expires.access_token,
+        refresh_token: registerData.tokens.expires.refresh_token,
       },
     };
     return {
@@ -64,8 +70,12 @@ export class AuthController {
     const loginResponse: LoginResponse = {
       id: loginData.user.id,
       token: {
-        access_token: loginData.tokens.access_token,
-        refresh_token: loginData.tokens.refresh_token,
+        access_token: loginData.tokens.token.access_token,
+        refresh_token: loginData.tokens.token.refresh_token,
+      },
+      expires: {
+        access_token: loginData.tokens.expires.access_token,
+        refresh_token: loginData.tokens.expires.refresh_token,
       },
     };
 
@@ -84,8 +94,12 @@ export class AuthController {
 
     const refreshTokenResponse: RefreshTokenResponse = {
       token: {
-        access_token: refreshTokenData.access_token,
-        refresh_token: refreshTokenData.refresh_token,
+        access_token: refreshTokenData.token.access_token,
+        refresh_token: refreshTokenData.token.refresh_token,
+      },
+      expires: {
+        access_token: refreshTokenData.expires.access_token,
+        refresh_token: refreshTokenData.expires.refresh_token,
       },
     };
     return {
@@ -150,5 +164,21 @@ export class AuthController {
   async verifyEmailFromLink(@Param('token') token: string) {
     const html = await this.authService.verifyEmailViaBackend(token);
     return html;
+  }
+
+  @Public()
+  @Post(Routes.AUTH_FORGOT_PASSWORD)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto);
+
+    return { message: SuccessMessage.FORGOT_PASSWORD_SUCCESS, data: null };
+  }
+
+  @Public()
+  @Post(Routes.AUTH_RESET_PASSWORD)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto);
+
+    return { message: SuccessMessage.RESET_PASSWORD_SUCCESS, data: null };
   }
 }

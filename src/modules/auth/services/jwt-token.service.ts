@@ -17,25 +17,47 @@ export class JwtTokenService {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
   ) {}
 
-  async generateAccessToken(payload: JwtTokenPayload): Promise<string> {
-    return this.jwtService.signAsync(payload, {
-      secret: configuration().jwtAccessSecret,
-      expiresIn: AuthEnum.JWT_EXPIRES_IN,
+  private async generateToken(
+    payload: JwtTokenPayload,
+    expiresIn: string,
+    secret?: string,
+  ) {
+    return this.jwtService.sign(payload, {
+      secret,
+      expiresIn,
     });
+  }
+
+  async generateAccessToken(payload: JwtTokenPayload): Promise<string> {
+    return await this.generateToken(
+      payload,
+      AuthEnum.JWT_EXPIRES_IN,
+      configuration().jwtAccessSecret,
+    );
   }
 
   async generateRefreshToken(payload: JwtTokenPayload): Promise<string> {
-    return this.jwtService.signAsync(payload, {
-      secret: configuration().jwtAccessSecret,
-      expiresIn: AuthEnum.JWT_REFRESH_EXPIRES_IN,
-    });
+    return await this.generateToken(
+      payload,
+      AuthEnum.JWT_REFRESH_EXPIRES_IN,
+      configuration().jwtAccessSecret,
+    );
   }
 
-  generateEmailToken(payload: JwtTokenPayload) {
-    return this.jwtService.sign(payload, {
-      secret: configuration().jwtEmailSecret,
-      expiresIn: AuthEnum.JWT_EMAIL_EXPIRES_IN,
-    });
+  async generateEmailToken(payload: JwtTokenPayload): Promise<string> {
+    return await this.generateToken(
+      payload,
+      AuthEnum.JWT_EMAIL_EXPIRES_IN,
+      configuration().jwtEmailSecret,
+    );
+  }
+
+  async generateForgotPasswordToken(payload: JwtTokenPayload): Promise<string> {
+    return await this.generateToken(
+      payload,
+      AuthEnum.JWT_FORGOT_PASSWORD_EXPIRES_IN,
+      configuration().jwtEmailSecret,
+    );
   }
 
   async generateTokenPair(payload: JwtTokenPayload): Promise<JwtTokenResponse> {
@@ -47,9 +69,14 @@ export class JwtTokenService {
     const hashedRefreshToken = await this.hashToken(refreshToken);
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      expires_in: this.getExpiresIn(AuthEnum.JWT_EXPIRES_IN),
+      token: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      },
+      expires: {
+        access_token: this.getExpiresIn(AuthEnum.JWT_EXPIRES_IN),
+        refresh_token: this.getExpiresIn(AuthEnum.JWT_REFRESH_EXPIRES_IN),
+      },
       hashed_refresh_token: hashedRefreshToken,
     };
   }
@@ -71,16 +98,17 @@ export class JwtTokenService {
   private getExpiresIn(expiresIn: string): number {
     const unit = expiresIn.slice(-1);
     const value = parseInt(expiresIn.slice(0, -1));
+    const milliseconds = 1000;
 
     switch (unit) {
       case 's':
-        return value;
+        return value * milliseconds;
       case 'm':
-        return value * 60;
+        return value * 60 * milliseconds;
       case 'h':
-        return value * 60 * 60;
+        return value * 60 * 60 * milliseconds;
       case 'd':
-        return value * 24 * 60 * 60;
+        return value * 24 * 60 * 60 * milliseconds;
       default:
         return 3600; // 1 hour default
     }

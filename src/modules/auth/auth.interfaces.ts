@@ -1,7 +1,10 @@
+import { AuthJwtType } from 'src/common/enums/auth/auth.enum';
+
 export interface JwtTokenPayload {
   sub: string;
   email: string;
   device_id: string;
+  type?: AuthJwtType;
 }
 
 export interface LogoutPayload {
@@ -23,26 +26,25 @@ export interface UpdateAuthDevicePayload {
   is_revoked?: boolean;
 }
 
-export interface LoginResponse {
-  id: string;
+export interface TokenBaseResponse {
   token: {
     access_token: string;
     refresh_token: string;
   };
+  expires: {
+    access_token: number;
+    refresh_token: number;
+  };
+}
+
+export interface LoginResponse extends TokenBaseResponse {
+  id: string;
 }
 
 export interface RegisterResponse extends LoginResponse {}
 
-export interface JwtTokenResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
+export interface JwtTokenResponse extends TokenBaseResponse {
   hashed_refresh_token: string;
 }
 
-export interface RefreshTokenResponse {
-  token: {
-    access_token: string;
-    refresh_token: string;
-  };
-}
+export interface RefreshTokenResponse extends TokenBaseResponse {}

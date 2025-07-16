@@ -7,7 +7,12 @@ import {
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
-import { LoginDto, RegisterDto } from 'src/modules/auth/dto/auth.dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from 'src/modules/auth/dto/auth.dto';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
 import { JwtTokenService } from 'src/modules/auth/services/jwt-token.service';
 import { RefreshTokenDto } from 'src/modules/auth/dto/refresh-token.dto';
@@ -16,12 +21,16 @@ import { LogoutPayload } from 'src/modules/auth/auth.interfaces';
 import configuration from 'src/config/env.config';
 import {
   MailerSubject,
+  ResetPasswordPath,
   VerifyEmailPath,
 } from 'src/common/enums/mailer/mailer.enum';
 import { replaceString } from 'src/shared/utils/string.util';
 import { MailerService } from 'src/shared/mailer/mailer.service';
 import { verifyEmailTemplate } from 'src/shared/mailer/templates/verify-email.template';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
+import { AuthJwtType } from 'src/common/enums/auth/auth.enum';
+import { resetPasswordTemplate } from 'src/shared/mailer/templates/reset-password.template';
+import { UserService } from 'src/modules/user/services/user.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +39,7 @@ export class AuthService {
     private jwtTokenService: JwtTokenService,
     private authDeviceService: AuthDeviceService,
     private mailerService: MailerService,
+    private userService: UserService,
   ) {}
 
   private async registerDevice(payload: {
@@ -60,29 +70,22 @@ export class AuthService {
 
   async register(dto: RegisterDto, ip: string, userAgent: string) {
     // Check if email already exists
-    const existingEmail = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const existingEmail = await this.userService.isUserEmailExists(dto.email);
     if (existingEmail) {
-      throw new UnauthorizedException('Email already registered');
+      throw new UnauthorizedException(
+        ExceptionMessage.EMAIL_ALREADY_REGISTERED,
+      );
     }
 
     // Check if username already exists
-    const existingUsername = await this.prisma.user.findUnique({
-      where: { username: dto.username },
-    });
+    const existingUsername = await this.userService.isUserUsernameExists(
+      dto.username,
+    );
     if (existingUsername) {
-      throw new UnauthorizedException('Username already taken');
+      throw new UnauthorizedException(ExceptionMessage.USERNAME_ALREADY_TAKEN);
     }
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        name: dto.name,
-        username: dto.username,
-        password: await bcrypt.hash(dto.password, 10),
-      },
-    });
+    const user = await this.userService.createUser(dto);
 
     const tokens = await this.registerDevice({
       user_id: user.id,
@@ -100,9 +103,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ip: string, userAgent: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.userService.getUserByEmail(dto.email);
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException(ExceptionMessage.INVALID_CREDENTIALS);
     }
@@ -141,9 +142,7 @@ export class AuthService {
     if (!isValid || !isValidToken)
       throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: decoded.sub },
-    });
+    const user = await this.userService.getUserById(decoded.sub);
     if (!user) {
       throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
     }
@@ -168,15 +167,19 @@ export class AuthService {
     );
   }
 
-  private getVerifyUrl(token: string) {
+  private getRedirectPathUrl(token: string, type: AuthJwtType) {
+    const pathType =
+      type === AuthJwtType.EMAIL_VERIFICATION
+        ? VerifyEmailPath
+        : ResetPasswordPath;
     const baseUrl =
       configuration().verificationProcessVia === 'frontend'
         ? configuration().frontendUrl
         : configuration().backendUrl;
     const path =
       configuration().verificationProcessVia === 'frontend'
-        ? VerifyEmailPath.FRONTEND
-        : VerifyEmailPath.BACKEND;
+        ? pathType.FRONTEND
+        : pathType.BACKEND;
     const verifyUrlPath = replaceString(path, { ':token': token });
     return `${baseUrl}${verifyUrlPath}`;
   }
@@ -186,13 +189,17 @@ export class AuthService {
     email: string,
     name: string,
   ) {
-    const token = this.jwtTokenService.generateEmailToken({
+    const token = await this.jwtTokenService.generateEmailToken({
       sub: userId,
       email: email,
       device_id: '',
+      type: AuthJwtType.EMAIL_VERIFICATION,
     });
 
-    const verifyUrl = this.getVerifyUrl(token);
+    const verifyUrl = this.getRedirectPathUrl(
+      token,
+      AuthJwtType.EMAIL_VERIFICATION,
+    );
 
     await this.mailerService.sendMail(
       email,
@@ -208,9 +215,7 @@ export class AuthService {
         configuration().jwtEmailSecret,
       );
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-      });
+      const user = await this.userService.getUserById(payload.sub);
 
       if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
       if (user.isVerified)
@@ -230,7 +235,7 @@ export class AuthService {
   }
 
   async resendVerification(userId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.userService.getUserById(userId);
 
     if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
     if (user.isVerified)
@@ -248,20 +253,15 @@ export class AuthService {
         configuration().jwtEmailSecret,
       );
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-      });
+      const user = await this.userService.getUserById(payload.sub);
 
       if (!user) return this.buildHtml(ExceptionMessage.USER_NOT_FOUND);
       if (user.isVerified)
         return this.buildHtml(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
 
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          isVerified: true,
-          verifiedAt: new Date(),
-        },
+      await this.userService.updateUser(user.id, {
+        isVerified: true,
+        verifiedAt: new Date(),
       });
 
       return this.buildHtml(SuccessMessage.EMAIL_VERIFIED_SUCCESS);
@@ -288,5 +288,43 @@ export class AuthService {
       </body>
     </html>
     `;
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.userService.getUserByEmail(dto.email);
+
+    if (!user) {
+      return;
+    }
+
+    const token = await this.jwtTokenService.generateForgotPasswordToken({
+      sub: user.id,
+      email: user.email,
+      device_id: '',
+      type: AuthJwtType.PASSWORD,
+    });
+
+    const resetUrl = this.getRedirectPathUrl(token, AuthJwtType.PASSWORD);
+
+    await this.mailerService.sendMail(
+      user.email,
+      MailerSubject.RESET_PASSWORD,
+      resetPasswordTemplate(user.name, resetUrl),
+    );
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const payload = await this.jwtTokenService.verifyToken(
+      dto.token,
+      configuration().jwtEmailSecret,
+    );
+
+    if (payload.type !== AuthJwtType.PASSWORD) {
+      throw new UnauthorizedException(ExceptionMessage.INVALID_TOKEN_TYPE);
+    }
+
+    await this.userService.changePassword(payload.sub, {
+      newPassword: dto.password,
+    });
   }
 }
