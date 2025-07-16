@@ -6,10 +6,14 @@ import { JwtTokenPayload } from '../auth.interfaces';
 import { JwtTokenService } from '../services/jwt-token.service';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
 import { Request } from 'express';
+import { AuthDeviceService } from '../services/auth-device.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly jwtTokenService: JwtTokenService) {
+  constructor(
+    private readonly jwtTokenService: JwtTokenService,
+    private authDeviceService: AuthDeviceService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -29,7 +33,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const isBlacklisted = await this.jwtTokenService.isBlacklisted(token);
-    if (isBlacklisted) {
+    const isDeviceRevoked = await this.authDeviceService.isDeviceRevoked(
+      payload.device_id,
+      payload.sub,
+    );
+    if (isBlacklisted || isDeviceRevoked) {
       throw new UnauthorizedException(
         ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED,
       );

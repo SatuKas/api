@@ -103,7 +103,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ip: string, userAgent: string) {
-    const user = await this.userService.getUserByEmail(dto.email);
+    const user = await this.userService.getUserByEmail(dto.email, true);
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException(ExceptionMessage.INVALID_CREDENTIALS);
     }
@@ -142,7 +142,7 @@ export class AuthService {
     if (!isValid || !isValidToken)
       throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
 
-    const user = await this.userService.getUserById(decoded.sub);
+    const user = await this.userService.getUserById(decoded.sub, true);
     if (!user) {
       throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
     }
@@ -215,7 +215,7 @@ export class AuthService {
         configuration().jwtEmailSecret,
       );
 
-      const user = await this.userService.getUserById(payload.sub);
+      const user = await this.userService.getUserById(payload.sub, true);
 
       if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
       if (user.isVerified)
@@ -235,7 +235,7 @@ export class AuthService {
   }
 
   async resendVerification(userId: string) {
-    const user = await this.userService.getUserById(userId);
+    const user = await this.userService.getUserById(userId, true);
 
     if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
     if (user.isVerified)
@@ -253,7 +253,7 @@ export class AuthService {
         configuration().jwtEmailSecret,
       );
 
-      const user = await this.userService.getUserById(payload.sub);
+      const user = await this.userService.getUserById(payload.sub, true);
 
       if (!user) return this.buildHtml(ExceptionMessage.USER_NOT_FOUND);
       if (user.isVerified)

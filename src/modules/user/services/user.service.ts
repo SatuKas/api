@@ -52,26 +52,33 @@ export class UserService {
     return !!existingUsername;
   }
 
-  async getUserById(id: string) {
+  async getUserById(id: string, withPassword: boolean = false) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
+      omit: { password: !withPassword, updatedAt: true },
     });
 
     return user;
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string, withPassword: boolean = false) {
     const user = await this.prisma.user.findUnique({
       where: { email: email },
+      omit: { password: !withPassword, updatedAt: true },
     });
 
     return user;
   }
 
-  async updateUser(id: string, dto: UpdateUserDto) {
+  async updateUser(
+    id: string,
+    dto: UpdateUserDto,
+    withPassword: boolean = false,
+  ) {
     const user = await this.prisma.user.update({
       where: { id: id },
       data: dto,
+      omit: { password: !withPassword, updatedAt: true },
     });
 
     return user;
