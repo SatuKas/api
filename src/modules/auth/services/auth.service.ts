@@ -47,25 +47,38 @@ export class AuthService {
     email: string;
     ip: string;
     user_agent: string;
+    device_id?: string;
   }) {
     const deviceId = uuidv4();
 
+    const device = await this.authDeviceService.getDeviceById(
+      payload.device_id || deviceId,
+      payload.user_id,
+    );
     const tokenPayload = {
       sub: payload.user_id,
       email: payload.email,
-      device_id: deviceId,
+      device_id: device?.id || deviceId,
     };
     const tokens = await this.jwtTokenService.generateTokenPair(tokenPayload);
 
-    await this.authDeviceService.registerAuthDevice({
-      id: deviceId,
-      user_id: payload.user_id,
-      user_agent: payload.user_agent,
-      ip_address: payload.ip,
-      refresh_token: tokens.hashed_refresh_token,
-    });
+    if (device) {
+      await this.authDeviceService.updateAuthDevice({
+        id: device.id,
+        refresh_token: tokens.hashed_refresh_token,
+        is_revoked: false,
+      });
+    } else {
+      await this.authDeviceService.registerAuthDevice({
+        id: deviceId,
+        user_id: payload.user_id,
+        user_agent: payload.user_agent,
+        ip_address: payload.ip,
+        refresh_token: tokens.hashed_refresh_token,
+      });
+    }
 
-    return tokens;
+    return { tokens, deviceId: device?.id || deviceId };
   }
 
   async register(dto: RegisterDto, ip: string, userAgent: string) {
@@ -87,7 +100,7 @@ export class AuthService {
 
     const user = await this.userService.createUser(dto);
 
-    const tokens = await this.registerDevice({
+    const { deviceId, tokens } = await this.registerDevice({
       user_id: user.id,
       email: user.email,
       ip: ip,
@@ -98,6 +111,7 @@ export class AuthService {
 
     return {
       user,
+      device: deviceId,
       tokens,
     };
   }
@@ -108,14 +122,15 @@ export class AuthService {
       throw new UnauthorizedException(ExceptionMessage.INVALID_CREDENTIALS);
     }
 
-    const tokens = await this.registerDevice({
+    const { tokens, deviceId } = await this.registerDevice({
       user_id: user.id,
       email: user.email,
       ip: ip,
       user_agent: userAgent,
+      device_id: dto.device_id,
     });
 
-    return { user, tokens };
+    return { user, tokens, device: deviceId };
   }
 
   async refreshToken(dto: RefreshTokenDto) {

@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsJWT,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
@@ -12,6 +13,10 @@ export class LoginDto {
 
   @IsString()
   password: string;
+
+  @IsString()
+  @IsOptional()
+  device_id?: string;
 }
 
 export class RegisterDto {

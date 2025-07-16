@@ -50,6 +50,7 @@ export class AuthController {
         access_token: registerData.tokens.expires.access_token,
         refresh_token: registerData.tokens.expires.refresh_token,
       },
+      device: registerData.device,
     };
     return {
       message: SuccessMessage.REGISTER_SUCCESS,
@@ -77,6 +78,7 @@ export class AuthController {
         access_token: loginData.tokens.expires.access_token,
         refresh_token: loginData.tokens.expires.refresh_token,
       },
+      device: loginData.device,
     };
 
     return {

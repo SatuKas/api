@@ -39,6 +39,7 @@ export interface TokenBaseResponse {
 
 export interface LoginResponse extends TokenBaseResponse {
   id: string;
+  device: string;
 }
 
 export interface RegisterResponse extends LoginResponse {}
