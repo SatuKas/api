@@ -3,25 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { AuthEnum } from 'src/common/enums/auth/auth.enum';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
-import configuration from 'src/config/env.config';
 import { PrismaService } from 'src/database/prisma.service';
 import {
-  JwtTokenPayload,
-  JwtTokenResponse,
   RegisterAuthDevicePayload,
   UpdateAuthDevicePayload,
 } from 'src/modules/auth/auth.interfaces';
 
 @Injectable()
 export class AuthDeviceService {
-  constructor(
-    private jwtService: JwtService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async registerAuthDevice(payload: RegisterAuthDevicePayload) {
     await this.prisma.device.create({
@@ -71,5 +62,13 @@ export class AuthDeviceService {
       refresh_token: null,
       is_revoked: true,
     });
+  }
+
+  async isDeviceRevoked(deviceId: string, userId?: string) {
+    const device = await this.getDeviceById(deviceId, userId);
+
+    if (!device) return true;
+
+    return device.isRevoked;
   }
 }

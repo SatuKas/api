@@ -12,4 +12,5 @@ export enum Routes {
   AUTH_RESET_PASSWORD = 'reset-password/:token',
   HEALTH = 'health',
   USER = 'user',
+  USER_CURRENT_INFO = 'me',
 }
