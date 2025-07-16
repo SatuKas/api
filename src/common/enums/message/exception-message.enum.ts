@@ -13,4 +13,5 @@ export enum ExceptionMessage {
   TOKEN_REVOKED_OR_EXPIRED = 'Token revoked or expired',
   USER_NOT_FOUND = 'User not found',
   EMAIL_ALREADY_VERIFIED = 'Email already verified',
+  INVALID_TOKEN_TYPE = 'Invalid token type',
 }

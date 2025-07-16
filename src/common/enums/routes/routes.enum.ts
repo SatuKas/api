@@ -7,7 +7,9 @@ export enum Routes {
   AUTH_LOGOUT_BY_DEVICE_ID = 'logout/device/:device_id',
   AUTH_EMAIL_VERIFY = 'verify-email/:token',
   AUTH_RESEND_VERIFICATION = 'resend-verification',
+  AUTH_FORGOT_PASSWORD = 'forgot-password',
   AUTH_VERIFY_EMAIL_FROM_LINK = 'verify-email/:token',
+  AUTH_RESET_PASSWORD = 'reset-password/:token',
   HEALTH = 'health',
   USER = 'user',
 }

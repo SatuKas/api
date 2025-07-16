@@ -12,4 +12,6 @@ export enum SuccessMessage {
   LOGOUT_SUCCESS = 'User logged out successfully',
   EMAIL_VERIFIED_SUCCESS = 'Email verified successfully',
   VERIFICATION_EMAIL_RESEND_SUCCESS = 'Email verification resend successfully',
+  FORGOT_PASSWORD_SUCCESS = 'If that email exists, a reset link has been sent.',
+  RESET_PASSWORD_SUCCESS = 'Password reset successfully',
 }
