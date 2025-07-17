@@ -7,6 +7,8 @@ import { JwtTokenService } from '../services/jwt-token.service';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
 import { Request } from 'express';
 import { AuthDeviceService } from '../services/auth-device.service';
+import throwException from 'src/shared/exception/throw.exception';
+import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -29,7 +31,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      throw new UnauthorizedException(ExceptionMessage.UNAUTHORIZED);
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.UNAUTHORIZED_USER,
+        ExceptionCode.UNAUTHORIZED_USER,
+      );
     }
 
     const isBlacklisted = await this.jwtTokenService.isBlacklisted(token);
@@ -38,8 +44,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       payload.sub,
     );
     if (isBlacklisted || isDeviceRevoked) {
-      throw new UnauthorizedException(
-        ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED,
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.REVOKED_TOKEN,
+        ExceptionCode.REVOKED_TOKEN,
       );
     }
     return {
