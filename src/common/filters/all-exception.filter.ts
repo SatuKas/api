@@ -11,6 +11,7 @@ import { ExceptionMessage } from '../enums/message/exception-message.enum';
 import { AppLogger } from '../logger/logger.service';
 import { loggerMessageFormater } from 'src/shared/utils/logger.util';
 import { ExceptionResponseMapper } from 'src/common/mappers/exception-response.mapper';
+import { ExceptionCode } from '../enums/response-code/exception-code.enum';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -23,7 +24,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = ExceptionMessage.SERVER_ERROR;
+    let message = ExceptionMessage.INTERNAL_SERVER_ERROR;
+    let code = ExceptionCode.INTERNAL_SERVER_ERROR;
     let errorData = null;
     let details: Array<Record<string, any>> | undefined = undefined;
 
@@ -40,12 +42,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ) {
           const validationErrors = (responseObj as any).message;
           details = validationErrors;
-          message = ExceptionMessage.BAD_REQUEST;
+          message = ExceptionMessage.INVALID_REQUEST;
+          code = ExceptionCode.INVALID_REQUEST;
         } else {
           message =
             (responseObj as any).message ||
             (responseObj as any).error ||
             message;
+          code = (responseObj as any).code;
         }
         errorData = responseObj as any;
       }
@@ -71,7 +75,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       request.url,
       details,
       message,
-      undefined,
+      code,
     );
 
     response.status(status).json(errorResponse);

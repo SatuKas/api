@@ -1,33 +1,33 @@
 import { HttpStatus } from '@nestjs/common';
 import { ExceptionCode } from '../enums/response-code/exception-code.enum';
 import { ExceptionMessage } from '../enums/message/exception-message.enum';
-import { ApiResponse } from 'src/types/api-response.type';
+import { ApiResponse, ResponseStatus } from 'src/types/api-response.type';
 
 export class ExceptionResponseMapper {
   private static readonly errorMapping = {
     [HttpStatus.UNAUTHORIZED]: {
-      code: ExceptionCode.UNAUTHORIZED,
-      message: ExceptionMessage.UNAUTHORIZED,
+      code: ExceptionCode.UNAUTHORIZED_USER,
+      message: ExceptionMessage.UNAUTHORIZED_USER,
     },
     [HttpStatus.FORBIDDEN]: {
-      code: ExceptionCode.FORBIDDEN,
-      message: ExceptionMessage.FORBIDDEN,
+      code: ExceptionCode.FORBIDDEN_ACCESS,
+      message: ExceptionMessage.FORBIDDEN_ACCESS,
     },
     [HttpStatus.NOT_FOUND]: {
-      code: ExceptionCode.NOT_FOUND,
-      message: ExceptionMessage.NOT_FOUND,
+      code: ExceptionCode.DATA_NOT_FOUND,
+      message: ExceptionMessage.DATA_NOT_FOUND,
     },
     [HttpStatus.BAD_REQUEST]: {
-      code: ExceptionCode.BAD_REQUEST,
-      message: ExceptionMessage.BAD_REQUEST,
+      code: ExceptionCode.INVALID_REQUEST,
+      message: ExceptionMessage.INVALID_REQUEST,
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
-      code: ExceptionCode.VALIDATION_FAILED,
-      message: ExceptionMessage.VALIDATION_FAILED,
+      code: ExceptionCode.UNPROCESSABLE_ENTITY,
+      message: ExceptionMessage.UNPROCESSABLE_ENTITY,
     },
     [HttpStatus.INTERNAL_SERVER_ERROR]: {
-      code: ExceptionCode.SERVER_ERROR,
-      message: ExceptionMessage.SERVER_ERROR,
+      code: ExceptionCode.INTERNAL_SERVER_ERROR,
+      message: ExceptionMessage.INTERNAL_SERVER_ERROR,
     },
   };
 
@@ -71,12 +71,12 @@ export class ExceptionResponseMapper {
     }
 
     return {
-      status: 'error',
+      status: ResponseStatus.ERROR,
+      code: customCode || mapping.code,
       message: message,
       data: null,
       error: {
-        code: customCode || mapping.code,
-        details: details,
+        details: details || [],
       },
       timestamp: new Date().toISOString(),
       path: path || '',
