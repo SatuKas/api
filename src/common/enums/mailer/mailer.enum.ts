@@ -25,7 +25,7 @@ export enum MailerSubject {
  * Used to generate links for email verification.
  */
 export enum VerifyEmailPath {
-  FRONTEND = 'verify-email?token=:token', // Frontend route, :token will be replaced with actual token
+  FRONTEND = '/auth/verify-email?token=:token', // Frontend route, :token will be replaced with actual token
   BACKEND = `/api/v1/${Routes.AUTH}/${Routes.AUTH_EMAIL_VERIFY}`, // Backend API endpoint for email verification
 }
 
@@ -34,6 +34,6 @@ export enum VerifyEmailPath {
  * Used to generate links for password reset.
  */
 export enum ResetPasswordPath {
-  FRONTEND = 'reset-password?token=:token', // Frontend route, :token will be replaced with actual token
+  FRONTEND = '/auth/reset-password?token=:token', // Frontend route, :token will be replaced with actual token
   BACKEND = `/api/v1/${Routes.AUTH}/${Routes.AUTH_RESET_PASSWORD}`, // Backend API endpoint for password reset
 }
