@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,6 +32,8 @@ import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { AuthJwtType } from 'src/common/enums/auth/auth.enum';
 import { resetPasswordTemplate } from 'src/shared/mailer/templates/reset-password.template';
 import { UserService } from 'src/modules/user/services/user.service';
+import throwException from 'src/shared/exception/throw.exception';
+import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 
 @Injectable()
 export class AuthService {
@@ -85,8 +88,10 @@ export class AuthService {
     // Check if email already exists
     const existingEmail = await this.userService.isUserEmailExists(dto.email);
     if (existingEmail) {
-      throw new UnauthorizedException(
+      throw throwException(
+        UnprocessableEntityException,
         ExceptionMessage.EMAIL_ALREADY_REGISTERED,
+        ExceptionCode.DATA_ALREADY_EXISTS,
       );
     }
 
@@ -95,7 +100,11 @@ export class AuthService {
       dto.username,
     );
     if (existingUsername) {
-      throw new UnauthorizedException(ExceptionMessage.USERNAME_ALREADY_TAKEN);
+      throw throwException(
+        UnprocessableEntityException,
+        ExceptionMessage.USERNAME_ALREADY_TAKEN,
+        ExceptionCode.DATA_ALREADY_EXISTS,
+      );
     }
 
     const user = await this.userService.createUser(dto);
@@ -119,7 +128,11 @@ export class AuthService {
   async login(dto: LoginDto, ip: string, userAgent: string) {
     const user = await this.userService.getUserByEmail(dto.email, true);
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-      throw new UnauthorizedException(ExceptionMessage.INVALID_CREDENTIALS);
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_CREDENTIALS,
+        ExceptionCode.INVALID_CREDENTIALS,
+      );
     }
 
     const { tokens, deviceId } = await this.registerDevice({
@@ -143,8 +156,10 @@ export class AuthService {
     );
 
     if (!device || !device.refreshToken) {
-      throw new UnauthorizedException(
+      throw throwException(
+        UnauthorizedException,
         ExceptionMessage.INVALID_REFRESH_TOKEN_DEVICE,
+        ExceptionCode.INVALID_TOKEN,
       );
     }
     const isValidToken = this.jwtTokenService.verifyToken(dto.refresh_token);
@@ -155,11 +170,19 @@ export class AuthService {
     );
 
     if (!isValid || !isValidToken)
-      throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN,
+        ExceptionCode.INVALID_TOKEN,
+      );
 
     const user = await this.userService.getUserById(decoded.sub, true);
     if (!user) {
-      throw new UnauthorizedException(ExceptionMessage.INVALID_REFRESH_TOKEN);
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN,
+        ExceptionCode.INVALID_TOKEN,
+      );
     }
     const tokens = await this.jwtTokenService.generateTokenPair({
       sub: user.id,
@@ -232,9 +255,18 @@ export class AuthService {
 
       const user = await this.userService.getUserById(payload.sub, true);
 
-      if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
+      if (!user)
+        throw throwException(
+          NotFoundException,
+          ExceptionMessage.DATA_NOT_FOUND,
+          ExceptionCode.DATA_NOT_FOUND,
+        );
       if (user.isVerified)
-        throw new BadRequestException(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
+        throw throwException(
+          BadRequestException,
+          ExceptionMessage.EMAIL_ALREADY_VERIFIED,
+          ExceptionCode.DATA_ALREADY_EXISTS,
+        );
 
       await this.prisma.user.update({
         where: { id: payload.sub },
@@ -243,8 +275,10 @@ export class AuthService {
 
       return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
     } catch (err) {
-      throw new UnauthorizedException(
-        ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED,
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN,
+        ExceptionCode.INVALID_TOKEN,
       );
     }
   }
@@ -252,9 +286,18 @@ export class AuthService {
   async resendVerification(userId: string) {
     const user = await this.userService.getUserById(userId, true);
 
-    if (!user) throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
+    if (!user)
+      throw throwException(
+        NotFoundException,
+        ExceptionMessage.DATA_NOT_FOUND,
+        ExceptionCode.DATA_NOT_FOUND,
+      );
     if (user.isVerified)
-      throw new BadRequestException(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
+      throw throwException(
+        BadRequestException,
+        ExceptionMessage.EMAIL_ALREADY_VERIFIED,
+        ExceptionCode.DATA_ALREADY_EXISTS,
+      );
 
     await this.sendEmailVerification(user.id, user.email, user.name);
 
@@ -270,7 +313,7 @@ export class AuthService {
 
       const user = await this.userService.getUserById(payload.sub, true);
 
-      if (!user) return this.buildHtml(ExceptionMessage.USER_NOT_FOUND);
+      if (!user) return this.buildHtml(ExceptionMessage.DATA_NOT_FOUND);
       if (user.isVerified)
         return this.buildHtml(ExceptionMessage.EMAIL_ALREADY_VERIFIED);
 
@@ -281,7 +324,7 @@ export class AuthService {
 
       return this.buildHtml(SuccessMessage.EMAIL_VERIFIED_SUCCESS);
     } catch (err) {
-      return this.buildHtml(ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED);
+      return this.buildHtml(ExceptionMessage.INVALID_TOKEN);
     }
   }
 
@@ -335,7 +378,11 @@ export class AuthService {
     );
 
     if (payload.type !== AuthJwtType.PASSWORD) {
-      throw new UnauthorizedException(ExceptionMessage.INVALID_TOKEN_TYPE);
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN_TYPE,
+        ExceptionCode.INVALID_TOKEN_TYPE,
+      );
     }
 
     await this.userService.changePassword(payload.sub, {

@@ -7,6 +7,8 @@ import { ResponseData } from 'src/types/api-response.type';
 import { UserResponse } from './user.interface';
 import { UserMapper } from './user.mapper';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
+import throwException from 'src/shared/exception/throw.exception';
+import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 
 @Controller(Routes.USER)
 export class UserController {
@@ -22,7 +24,11 @@ export class UserController {
     const user = await this.userService.getUserById(userId);
 
     if (!user) {
-      throw new NotFoundException(ExceptionMessage.USER_NOT_FOUND);
+      throw throwException(
+        NotFoundException,
+        ExceptionMessage.DATA_NOT_FOUND,
+        ExceptionCode.DATA_NOT_FOUND,
+      );
     }
 
     const response = this.userMapper.toResponse(user);

@@ -4,11 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
+import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 import { PrismaService } from 'src/database/prisma.service';
 import {
   RegisterAuthDevicePayload,
   UpdateAuthDevicePayload,
 } from 'src/modules/auth/auth.interfaces';
+import throwException from 'src/shared/exception/throw.exception';
 
 @Injectable()
 export class AuthDeviceService {
@@ -50,12 +52,18 @@ export class AuthDeviceService {
     const device = await this.getDeviceById(deviceId, userId);
 
     if (!device)
-      throw new NotFoundException(
+      throw throwException(
+        NotFoundException,
         ExceptionMessage.INVALID_REFRESH_TOKEN_DEVICE,
+        ExceptionCode.INVALID_TOKEN,
       );
 
-    if (device.isRevoked)
-      throw new BadRequestException(ExceptionMessage.TOKEN_REVOKED_OR_EXPIRED);
+    if (device?.isRevoked)
+      throw throwException(
+        BadRequestException,
+        ExceptionMessage.REVOKED_TOKEN,
+        ExceptionCode.REVOKED_TOKEN,
+      );
 
     await this.updateAuthDevice({
       id: deviceId,
