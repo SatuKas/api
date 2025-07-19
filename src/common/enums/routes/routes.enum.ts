@@ -9,7 +9,7 @@ export enum Routes {
   AUTH_RESEND_VERIFICATION = 'resend-verification',
   AUTH_FORGOT_PASSWORD = 'forgot-password',
   AUTH_VERIFY_EMAIL_FROM_LINK = 'verify-email/:token',
-  AUTH_RESET_PASSWORD = 'reset-password/:token',
+  AUTH_RESET_PASSWORD = 'reset-password',
   HEALTH = 'health',
   USER = 'user',
   USER_CURRENT_INFO = 'me',
