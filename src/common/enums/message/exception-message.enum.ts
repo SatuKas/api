@@ -13,6 +13,7 @@ export enum ExceptionMessage {
   EXPIRED_TOKEN = 'Your session has expired.',
   REVOKED_TOKEN = 'This token is no longer valid.',
   TOKEN_NOT_FOUND = 'No token was found.',
+  EMAIL_NOT_VERIFIED = 'Please verify your email to continue.',
 
   // Request Error
   INVALID_REQUEST = 'Please review your input and try again.',

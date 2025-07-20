@@ -14,6 +14,8 @@ export enum ExceptionCode {
   REVOKED_TOKEN = 'AUT05',
   TOKEN_NOT_FOUND = 'AUT06',
   INVALID_TOKEN_TYPE = 'AUT07',
+  EMAIL_NOT_VERIFIED = 'AUT08',
+  INVALID_EMAIL_TOKEN = 'AUT09',
 
   // Request Error
   INVALID_REQUEST = 'REQ00',
