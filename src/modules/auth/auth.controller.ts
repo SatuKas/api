@@ -12,6 +12,7 @@ import {
   ForgotPasswordDto,
   LoginDto,
   RegisterDto,
+  ResendVerificationDto,
   ResetPasswordDto,
   VerifyEmailDto,
 } from 'src/modules/auth/dto/auth.dto';
@@ -149,11 +150,12 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post(Routes.AUTH_RESEND_VERIFICATION)
   async resendVerification(
-    @CurrentUser('sub') userId: string,
+    @Body() dto: ResendVerificationDto,
   ): Promise<ResponseData<null>> {
-    const resendData = await this.authService.resendVerification(userId);
+    const resendData = await this.authService.resendVerification(dto.email);
     return {
       message: resendData.message,
       data: null,

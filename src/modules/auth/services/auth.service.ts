@@ -135,6 +135,14 @@ export class AuthService {
       );
     }
 
+    if (!user.isVerified) {
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.EMAIL_NOT_VERIFIED,
+        ExceptionCode.EMAIL_NOT_VERIFIED,
+      );
+    }
+
     const { tokens, deviceId } = await this.registerDevice({
       user_id: user.id,
       email: user.email,
@@ -247,44 +255,52 @@ export class AuthService {
   }
 
   async verifyEmail(token: string) {
-    try {
-      const payload = await this.jwtTokenService.verifyToken(
-        token,
-        configuration().jwtEmailSecret,
-      );
+    const payload = await this.jwtTokenService.verifyToken(
+      token,
+      configuration().jwtEmailSecret,
+    );
 
-      const user = await this.userService.getUserById(payload.sub, true);
-
-      if (!user)
-        throw throwException(
-          NotFoundException,
-          ExceptionMessage.DATA_NOT_FOUND,
-          ExceptionCode.DATA_NOT_FOUND,
-        );
-      if (user.isVerified)
-        throw throwException(
-          BadRequestException,
-          ExceptionMessage.EMAIL_ALREADY_VERIFIED,
-          ExceptionCode.DATA_ALREADY_EXISTS,
-        );
-
-      await this.prisma.user.update({
-        where: { id: payload.sub },
-        data: { isVerified: true, verifiedAt: new Date() },
-      });
-
-      return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
-    } catch (err) {
+    if (!payload) {
       throw throwException(
         UnauthorizedException,
         ExceptionMessage.INVALID_TOKEN,
-        ExceptionCode.INVALID_TOKEN,
+        ExceptionCode.INVALID_EMAIL_TOKEN,
       );
     }
+
+    if (payload.type !== AuthJwtType.EMAIL_VERIFICATION) {
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN_TYPE,
+        ExceptionCode.INVALID_TOKEN_TYPE,
+      );
+    }
+
+    const user = await this.userService.getUserById(payload.sub, true);
+
+    if (!user)
+      throw throwException(
+        NotFoundException,
+        ExceptionMessage.DATA_NOT_FOUND,
+        ExceptionCode.DATA_NOT_FOUND,
+      );
+    if (user.isVerified)
+      throw throwException(
+        BadRequestException,
+        ExceptionMessage.EMAIL_ALREADY_VERIFIED,
+        ExceptionCode.DATA_ALREADY_EXISTS,
+      );
+
+    await this.prisma.user.update({
+      where: { id: payload.sub },
+      data: { isVerified: true, verifiedAt: new Date() },
+    });
+
+    return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
   }
 
-  async resendVerification(userId: string) {
-    const user = await this.userService.getUserById(userId, true);
+  async resendVerification(email: string) {
+    const user = await this.userService.getUserByEmail(email, true);
 
     if (!user)
       throw throwException(
@@ -376,6 +392,14 @@ export class AuthService {
       dto.token,
       configuration().jwtEmailSecret,
     );
+
+    if (!payload) {
+      throw throwException(
+        UnauthorizedException,
+        ExceptionMessage.INVALID_TOKEN,
+        ExceptionCode.INVALID_EMAIL_TOKEN,
+      );
+    }
 
     if (payload.type !== AuthJwtType.PASSWORD) {
       throw throwException(
