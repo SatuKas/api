@@ -2,9 +2,10 @@
   "name": "nest-api-base-project",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "repository": "https://github.com/arubaya/next-dashboard-base-project.git",
+  "author": "arubaya",
+  "license": "MIT",
   "private": true,
-  "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
