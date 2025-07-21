@@ -1,8 +1,8 @@
 {
-  "name": "nest-api-base-project",
+  "name": "satukas-api",
   "version": "0.0.1",
   "description": "",
-  "repository": "https://github.com/arubaya/nest-api-base-project.git",
+  "repository": "https://github.com/SatuKas/api.git",
   "author": "arubaya",
   "license": "MIT",
   "private": true,

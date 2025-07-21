@@ -1,10 +1,10 @@
-# NestJS API Base Project 🚀
+# SatuKas API 🚀
 
-A robust and scalable NestJS starter template designed to kickstart your backend development with essential features pre-configured. This project serves as a solid foundation for building production-ready REST APIs with best practices and modern tooling.
+A robust and scalable REST API for SatuKas, a personal finance management application. Built with NestJS and modern best practices to provide secure and efficient financial data management.
 
 ## 📝 Summary
 
-This base project is crafted to accelerate your NestJS application development by providing a well-structured foundation with pre-implemented essential features. It's regularly maintained and updated to ensure compatibility with the latest dependencies and best practices.
+SatuKas API serves as the backend infrastructure for the SatuKas application, providing essential features for personal finance management including user authentication, transaction tracking, budgeting, and financial reporting capabilities. Built on top of NestJS with focus on security, scalability, and developer experience.
 
 ## 📑 Table of Contents
 
@@ -17,28 +17,24 @@ This base project is crafted to accelerate your NestJS application development b
 ## ✨ Key Features
 
 - **Authentication & Authorization**
-
-  - JWT-based authentication
+  - Secure JWT-based authentication
   - Role-based access control
   - Token refresh mechanism
   - Device-based authentication tracking
 
-- **Database Integration**
+- **Financial Management**
+  - Transaction management
+  - Budget tracking
+  - Category management
+  - Financial reporting
 
+- **Database Integration**
   - Prisma ORM setup
   - PostgreSQL configuration
   - Migration support
   - Type-safe database queries
 
-- **Email Service**
-
-  - Multi-provider support (SMTP, Resend)
-  - Email templates
-  - Email verification flow
-  - Password reset functionality
-
 - **Security & Best Practices**
-
   - Request validation
   - Exception handling
   - Winston logger integration
@@ -58,7 +54,7 @@ This base project is crafted to accelerate your NestJS application development b
 
    ```bash
    git clone <repository-url>
-   cd nest-api-base-project
+   cd satukas-api
    ```
 
 2. **Install dependencies**
@@ -123,9 +119,6 @@ pnpm run test:cov
 - **Database**: PostgreSQL
 - **Caching**: Redis
 - **Authentication**: Passport, JWT
-- **Email Service**:
-  - SMTP
-  - Resend API
 - **Testing**: Jest
 - **Documentation**: Swagger/OpenAPI
 - **Logging**: Winston
@@ -153,4 +146,4 @@ For a complete list of dependencies, please refer to `package.json`.
 
 ---
 
-🔄 This project is actively maintained and regularly updated with new features and security patches. Feel free to contribute or raise issues if you find any.
+🔄 This project is actively maintained. Feel free to contribute or raise issues if you find any.
