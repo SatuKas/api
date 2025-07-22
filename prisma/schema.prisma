@@ -19,8 +19,10 @@ model User {
   password  String
   name      String
   username  String   @unique
-  role      Role     @default(USER)
   devices   Device[]
+  books Book[]
+  bookMembers BookMember[] @relation("UserBookMember")
+  invitedBy BookMember[] @relation("InvitedBy")
   isVerified   Boolean  @default(false) @map("is_verified")
   verifiedAt   DateTime? @map("verified_at")
   createdAt DateTime @default(now()) @map("created_at")
@@ -43,7 +45,154 @@ model Device {
   @@map("device")
 }
 
-enum Role {
-  ADMIN
-  USER
+// Book is a collection of financial data for a specific purpose
+model Book {
+  id String @id @default(uuid())
+  name String
+  description String?
+  ownerId String @map("owner_id")
+  owner User @relation(fields: [ownerId], references: [id])
+  members BookMember[]
+  settings BookSetting[]
+  accounts Account[]
+  journals Journal[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("book")
+}
+
+// BookMember is a user who has access to a book
+model BookMember {
+  id String @id @default(uuid())
+  bookId String @map("book_id")
+  book Book @relation(fields: [bookId], references: [id])
+  userId String @map("user_id")
+  user User @relation("UserBookMember", fields: [userId], references: [id])
+  role BookMemberRole @default(OWNER)
+  status BookMemberStatus @default(ACCEPTED)
+  invitedBy String? @map("invited_by")
+  invitedByUser User? @relation("InvitedBy", fields: [invitedBy], references: [id])
+  invitedAt DateTime? @map("invited_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("book_member")
+}
+
+// BookSetting is a setting for a book
+model BookSetting {
+  id String @id @default(uuid())
+  bookId String @map("book_id")
+  book Book @relation(fields: [bookId], references: [id])
+  currency String @default("IDR")
+  modules BookModule[]
+  reports BookReport[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("book_setting")
+}
+
+model Account {
+  id String @id @default(uuid())
+  bookId String @map("book_id")
+  book Book @relation(fields: [bookId], references: [id])
+  name String
+  code String
+  isGroup Boolean @default(false) @map("is_group")
+  parentId String? @map("parent_id")
+  parent Account? @relation("ParentAccount", fields: [parentId], references: [id])
+  children Account[] @relation("ParentAccount")
+  type AccountType @default(ASSET)
+  description String?
+  entries JournalEntry[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("account")
+}
+
+model Journal {
+  id String @id @default(uuid())
+  bookId String @map("book_id")
+  book Book @relation(fields: [bookId], references: [id])
+  date DateTime
+  description String?
+  refType BookModule @map("ref_type")
+  refId String @map("ref_id")
+  entries JournalEntry[]
+  totalAmount Decimal @map("total_amount")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("journal")
+}
+
+model JournalEntry {
+  id String @id @default(uuid())
+  journalId String @map("journal_id")
+  journal Journal @relation(fields: [journalId], references: [id])
+  accountId String @map("account_id")
+  account Account @relation(fields: [accountId], references: [id])
+  amount Decimal @map("amount")
+  debit Decimal @map("debit")
+  credit Decimal @map("credit")
+  position Int @map("position")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("journal_entry")
+}
+
+// BookMemberRole is a role for a book member
+enum BookMemberRole {
+  OWNER
+  VIEWER
+}
+
+// BookMemberStatus is a status for a book member
+enum BookMemberStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  INACTIVE
+}
+
+// BookModule is a module for a book
+enum BookModule {
+  INCOME
+  EXPENSE
+  SAVING
+  INVESTMENT
+  DEBT
+  ASSET
+  LIABILITY
+  PROCUREMENT
+  RECEIPT
+  PAYMENT
+  TRANSFER
+  RECONCILIATION
+  PURCHASING
+  INVENTORY
+  SALES
+  CUSTOMER
+  VENDOR
+  EMPLOYEE
+}
+
+// BookReport is a report for a book
+enum BookReport {
+  BALANCE_SHEET
+  PROFIT_AND_LOSS
+  CASH_FLOW
+  INCOME_STATEMENT
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
 }
