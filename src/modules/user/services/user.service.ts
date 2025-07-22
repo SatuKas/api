@@ -6,7 +6,6 @@ import {
   CreateUserDto,
   UpdateUserDto,
 } from '../dto/user.dto';
-import { Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -16,14 +15,13 @@ export class UserService {
     return await bcrypt.hash(password, 10);
   }
 
-  async createUser(dto: CreateUserDto, isAdmin: boolean = false) {
+  async createUser(dto: CreateUserDto) {
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         name: dto.name,
         username: dto.username,
         password: await this.hashPassword(dto.password),
-        role: isAdmin ? Role.ADMIN : Role.USER,
       },
     });
 

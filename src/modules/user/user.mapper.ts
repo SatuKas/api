@@ -8,7 +8,6 @@ export class UserMapper {
       email: user.email,
       name: user.name,
       username: user.username,
-      role: user.role,
       is_verified: user.isVerified,
       verified_at: user.verifiedAt,
       created_at: user.createdAt,
