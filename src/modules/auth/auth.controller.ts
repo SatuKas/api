@@ -43,15 +43,6 @@ export class AuthController {
     const registerData = await this.authService.register(dto, ip, userAgent);
     const registerResponse: RegisterResponse = {
       id: registerData.user.id,
-      token: {
-        access_token: registerData.tokens.token.access_token,
-        refresh_token: registerData.tokens.token.refresh_token,
-      },
-      expires: {
-        access_token: registerData.tokens.expires.access_token,
-        refresh_token: registerData.tokens.expires.refresh_token,
-      },
-      device: registerData.device,
     };
     return {
       message: SuccessMessage.REGISTER_SUCCESS,

@@ -42,7 +42,7 @@ export interface LoginResponse extends TokenBaseResponse {
   device: string;
 }
 
-export interface RegisterResponse extends LoginResponse {}
+export interface RegisterResponse extends Pick<LoginResponse, 'id'> {}
 
 export interface JwtTokenResponse extends TokenBaseResponse {
   hashed_refresh_token: string;
