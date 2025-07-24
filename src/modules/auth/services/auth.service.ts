@@ -109,24 +109,16 @@ export class AuthService {
 
     const user = await this.userService.createUser(dto);
 
-    const { deviceId, tokens } = await this.registerDevice({
-      user_id: user.id,
-      email: user.email,
-      ip: ip,
-      user_agent: userAgent,
-    });
-
+    // TECHDEBT: Improve this email verification with IP, user agent, and location meta data (IP Geolocation)
     await this.sendEmailVerification(user.id, user.email, user.name);
 
     return {
       user,
-      device: deviceId,
-      tokens,
     };
   }
 
   async login(dto: LoginDto, ip: string, userAgent: string) {
-    const user = await this.userService.getUserByEmail(dto.email, true);
+    const user = await this.userService.getUserByUsername(dto.username, true);
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw throwException(
         UnauthorizedException,
@@ -299,6 +291,7 @@ export class AuthService {
     return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
   }
 
+  // TECHDEBT: Need to add a rate limit for this endpoint
   async resendVerification(email: string) {
     const user = await this.userService.getUserByEmail(email, true);
 

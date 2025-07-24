@@ -70,6 +70,15 @@ export class UserService {
     return user;
   }
 
+  async getUserByUsername(username: string, withPassword: boolean = false) {
+    const user = await this.prisma.user.findUnique({
+      where: { username: username },
+      omit: { password: !withPassword, updatedAt: true },
+    });
+
+    return user;
+  }
+
   async updateUser(
     id: string,
     dto: UpdateUserDto,
