@@ -118,7 +118,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ip: string, userAgent: string) {
-    const user = await this.userService.getUserByEmail(dto.email, true);
+    const user = await this.userService.getUserByUsername(dto.username, true);
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw throwException(
         UnauthorizedException,
@@ -291,6 +291,7 @@ export class AuthService {
     return { message: SuccessMessage.EMAIL_VERIFIED_SUCCESS };
   }
 
+  // TECHDEBT: Need to add a rate limit for this endpoint
   async resendVerification(email: string) {
     const user = await this.userService.getUserByEmail(email, true);
 
