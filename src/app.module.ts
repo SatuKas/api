@@ -13,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './shared/redis/redis.module';
 import { MailerModule } from './shared/mailer/mailer.module';
 import { PrismaModule } from './database/prisma.module';
+import { BookModule } from './modules/book/book.module';
 
 /**
  * Root module of the application that configures global settings and imports all feature modules
@@ -46,6 +47,7 @@ import { PrismaModule } from './database/prisma.module';
     RedisModule,
     MailerModule,
     PrismaModule,
+    BookModule,
   ],
   controllers: [],
   providers: [AppLogger],
