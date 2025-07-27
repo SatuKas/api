@@ -1,4 +1,8 @@
 export enum Routes {
+  // Health check
+  HEALTH = 'health',
+
+  // Auth
   AUTH = 'auth',
   AUTH_REGISTER = 'register',
   AUTH_LOGIN = 'login',
@@ -10,7 +14,13 @@ export enum Routes {
   AUTH_FORGOT_PASSWORD = 'forgot-password',
   AUTH_VERIFY_EMAIL_FROM_LINK = 'verify-email/:token',
   AUTH_RESET_PASSWORD = 'reset-password',
-  HEALTH = 'health',
+
+  // User
   USER = 'user',
   USER_CURRENT_INFO = 'me',
+
+  // Book
+  BOOK = 'book',
+  BOOK_SHARED = 'shared',
+  BOOK_DELETE = ':book_id',
 }
