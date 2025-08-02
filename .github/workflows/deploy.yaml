@@ -10,8 +10,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  build:
+  release-dev:
     runs-on: ubuntu-latest
+    environment: deploy-dev
 
     steps:
       - name: Checkout repository
@@ -22,13 +23,18 @@ jobs:
         with:
           node-version: '22' # Sesuaikan dengan versi node.js lo
 
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.9.0
+
       - name: Install dependencies
         run: |
-          npm install
+          pnpm install
 
       - name: Build NestJS application
         run: |
-          npm run build
+          pnpm build
 
       - name: Upload build to VPS
         uses: appleboy/ssh-action@v0.1.0
