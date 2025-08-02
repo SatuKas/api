@@ -61,4 +61,4 @@ jobs:
             gh pr edit $PR_NUMBER --add-label "release-dev"
           fi
         env:
-          GITHUB_TOKEN: ${{ GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
