@@ -32,6 +32,9 @@ jobs:
         run: |
           pnpm install
 
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
       - name: Build NestJS application
         run: |
           pnpm build
