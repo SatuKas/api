@@ -57,6 +57,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            source "$NVM_DIR/bash_completion"
             cd /home/satukas-dev/satukas-api
             pm2 restart satukas-api || pm2 start dist/main.js --name satukas-api
             pm2 save
