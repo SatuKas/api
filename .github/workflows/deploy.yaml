@@ -1,0 +1,49 @@
+name: Build and Deploy to VPS
+
+on:
+  push:
+    branches:
+      - dev # Ganti dengan branch lo kalau beda
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22' # Sesuaikan dengan versi node.js lo
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Build NestJS application
+        run: |
+          npm run build
+
+      - name: Upload build to VPS
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }} # Masukin IP VPS atau domain
+          username: ${{ secrets.VPS_USER }} # Username VPS (misal: root, ubuntu)
+          key: ${{ secrets.VPS_SSH_KEY }} # SSH Key buat akses VPS (terserah upload ke Secrets GitHub)
+          port: 22
+          source: 'dist/*' # Ambil folder build dari dist/
+          target: '/home/satukas-dev/satukas-api' # Lokasi di VPS tempat lo mau simpan hasil build
+
+      - name: Run application on VPS
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/satukas-dev/satukas-api
+            pm2 restart satukas-api || pm2 start dist/main.js --name satukas-api
+            pm2 save
