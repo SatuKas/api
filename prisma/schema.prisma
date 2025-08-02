@@ -56,6 +56,7 @@ model Book {
   settings BookSetting[]
   accounts Account[]
   journals Journal[]
+  openingBalance AccountOpeningBalance[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -77,6 +78,8 @@ model BookMember {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([bookId, userId])
+  @@index([userId, status])
   @@map("book_member")
 }
 
@@ -104,13 +107,41 @@ model Account {
   parentId String? @map("parent_id")
   parent Account? @relation("ParentAccount", fields: [parentId], references: [id])
   children Account[] @relation("ParentAccount")
-  type AccountType @default(ASSET)
+  category AccountCategory @default(ASSET)
+  type AccountType @default(CRAS)
   description String?
   entries JournalEntry[]
+  level Int @default(1)
+  currency String @default("IDR")
+  position AccountPosition @default(DEBIT)
+  openingBalance AccountOpeningBalance[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([level, parentId])
+  @@unique([bookId, code])
+  @@index([bookId, code])
+  @@index([parentId])
+  @@index([category])
   @@map("account")
+}
+
+model AccountOpeningBalance {
+  id String @id @default(uuid())
+  accountId String @map("account_id")
+  account Account @relation(fields: [accountId], references: [id])
+  bookId String @map("book_id")
+  book Book @relation(fields: [bookId], references: [id])
+  amount Decimal
+  date DateTime
+  description String?
+  type BalanceType @default(INITIAL)
+  isAdjusted Boolean @default(false) @map("is_adjusted")
+  adjustmentDate DateTime? @map("adjustment_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("account_opening_balance")
 }
 
 model Journal {
@@ -123,9 +154,12 @@ model Journal {
   refId String @map("ref_id")
   entries JournalEntry[]
   totalAmount Decimal @map("total_amount")
+  type JournalType @default(GENERAL)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([bookId, date])
+  @@index([refType, refId])
   @@map("journal")
 }
 
@@ -136,12 +170,14 @@ model JournalEntry {
   accountId String @map("account_id")
   account Account @relation(fields: [accountId], references: [id])
   amount Decimal @map("amount")
-  debit Decimal @map("debit")
-  credit Decimal @map("credit")
+  debit Decimal? @map("debit")
+  credit Decimal? @map("credit")
   position Int @map("position")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([journalId, accountId])
+  @@index([accountId, createdAt])
   @@map("journal_entry")
 }
 
@@ -189,10 +225,62 @@ enum BookReport {
   INCOME_STATEMENT
 }
 
-enum AccountType {
+enum AccountCategory {
   ASSET
   LIABILITY
   EQUITY
   INCOME
   EXPENSE
+}
+
+enum AccountType {
+  // Asset Types
+  CRAS    // Current Asset
+  FXAS    // Fixed Asset
+  INAS    // Intangible Asset
+  IVAS    // Investment Asset
+  OTAS    // Other Asset
+
+  // Liability Types
+  CRLI    // Current Liability
+  LTLI    // Long Term Liability
+  OTLI    // Other Liability
+
+  // Equity Types
+  CAPT    // Capital
+  RTER    // Retained Earnings
+  DRAW    // Drawings
+  RESV    // Reserves
+
+  // Income Types
+  OPIN    // Operating Income
+  NOIN    // Non Operating Income
+  OTIN    // Other Income
+
+  // Expense Types
+  COGS    // Cost of Goods Sold
+  OPEX    // Operating Expense
+  FIEX    // Financial Expense
+  TAXE    // Tax Expense
+  OTEX    // Other Expense
+}
+
+enum AccountPosition {
+  DEBIT
+  CREDIT
+}
+
+enum JournalType {
+  GENERAL
+  ADJUSTMENT
+  REVERSAL
+  CORRECTION
+  CLOSING
+  OPENING
+  RECONCILIATION
+}
+
+enum BalanceType {
+  INITIAL    // One-time setup
+  PERIODIC   // From closing
 }
