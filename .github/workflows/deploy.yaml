@@ -5,6 +5,10 @@ on:
     branches:
       - dev # Ganti dengan branch lo kalau beda
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,3 +51,14 @@ jobs:
             cd /home/satukas-dev/satukas-api
             pm2 restart satukas-api || pm2 start dist/main.js --name satukas-api
             pm2 save
+
+      # Step baru buat nambahin label ke PR
+      - name: Add label to PR
+        if: success()
+        run: |
+          PR_NUMBER=$(gh pr list --base dev --head ${{ github.sha }} --json number --jq '.[0].number')
+          if [ ! -z "$PR_NUMBER" ]; then
+            gh pr edit $PR_NUMBER --add-label "release-dev"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ GITHUB_TOKEN }}
