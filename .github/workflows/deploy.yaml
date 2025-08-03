@@ -57,7 +57,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            printf "%s\n" "${{ secrets.ENV_DEV }}" > /home/satukas-dev/satukas-api/.env
+            cat > /home/satukas-dev/satukas-api/.env <<'EOF'
+            ${{ secrets.ENV_DEV }}
+            EOF
 
       - name: Run application on VPS
         uses: appleboy/ssh-action@v0.1.0
