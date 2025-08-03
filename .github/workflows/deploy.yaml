@@ -75,6 +75,7 @@ jobs:
             cd /home/satukas-dev/satukas-api
             rm -rf node_modules
             pnpm install
+            pnpm prisma:generate
             pm2 restart satukas-api || pm2 start dist/main.js --name satukas-api
             pm2 save
 
