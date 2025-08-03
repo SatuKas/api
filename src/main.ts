@@ -13,6 +13,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
+  const corsOrigins = configuration()
+    .corsAllowedOrigins.split(',')
+    .map((origin) => origin.trim());
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
@@ -21,7 +24,12 @@ async function bootstrap() {
   const logger = await app.resolve(AppLogger);
 
   app.setGlobalPrefix('api');
-  app.enableCors();
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
   app.useWebSocketAdapter(new IoAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 

@@ -2,6 +2,8 @@ const configuration = () => ({
   appName: process.env.APP_NAME || 'My Cool App',
   port: parseInt(process.env.PORT ?? '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
+  corsAllowedOrigins:
+    process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000',
   logToFile: process.env.LOG_TO_FILE?.toLowerCase() === 'true',
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
   jwtEmailSecret: process.env.JWT_EMAIL_SECRET,

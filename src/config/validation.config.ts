@@ -6,6 +6,7 @@ const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
+  CORS_ALLOWED_ORIGINS: Joi.string().required(),
   LOG_TO_FILE: Joi.boolean().default(false),
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_EMAIL_SECRET: Joi.string().required(),
