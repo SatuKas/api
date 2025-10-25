@@ -1,11 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { Routes } from 'src/common/enums/routes/routes.enum';
 import { BookService } from './services/book.service';
 import { ResponseData } from 'src/types/api-response.type';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { BookListResponse } from './book.interface';
+import { BookDetailResponse, BookListResponse } from './book.interface';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { CreateBookDto } from './book.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import throwException from 'src/shared/exception/throw.exception';
+import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
+import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 
 @Controller(Routes.BOOK)
 export class BookController {
@@ -51,6 +63,41 @@ export class BookController {
         username: bookMember.book.owner.username,
       },
     }));
+    return {
+      message: SuccessMessage.FETCHED,
+      data: response,
+    };
+  }
+
+  @Get(Routes.BOOK_DETAIL)
+  @ApiOkResponse({
+    description: 'Fetched',
+    type: BookDetailResponse,
+  })
+  async getBookById(
+    @CurrentUser('sub') userId: string,
+    @Param('book_id') bookId: string,
+  ): Promise<ResponseData<BookDetailResponse>> {
+    const book = await this.bookService.getBookById(userId, bookId);
+
+    if (!book) {
+      throw throwException(
+        NotFoundException,
+        ExceptionMessage.DATA_NOT_FOUND,
+        ExceptionCode.DATA_NOT_FOUND,
+      );
+    }
+
+    const response = {
+      id: book.id,
+      name: book.name,
+      description: book.description,
+      created_at: book.createdAt,
+      owner: {
+        id: book.owner.id,
+      },
+    };
+
     return {
       message: SuccessMessage.FETCHED,
       data: response,
