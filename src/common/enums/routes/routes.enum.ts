@@ -20,7 +20,11 @@ export enum Routes {
   USER_CURRENT_INFO = 'me',
 
   // Book
-  BOOK = 'book',
+  BOOK = 'books',
   BOOK_SHARED = 'shared',
+  BOOK_DETAIL = ':book_id',
   BOOK_DELETE = ':book_id',
+
+  // COA
+  COA = 'accounts',
 }
