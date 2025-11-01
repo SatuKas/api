@@ -11,6 +11,7 @@ export enum ResponseStatus {
 export interface ResponseData<T> {
   data: T;
   message: ExceptionMessage | SuccessMessage | null;
+  extra_data?: ExtraDataResponse;
 }
 
 export interface ExtraDataResponse {
@@ -30,5 +31,4 @@ export interface ApiResponse<T> extends ResponseData<T> {
   };
   timestamp?: string;
   path?: string;
-  extra_data?: ExtraDataResponse;
 }

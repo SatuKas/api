@@ -14,6 +14,7 @@ import { RedisModule } from './shared/redis/redis.module';
 import { MailerModule } from './shared/mailer/mailer.module';
 import { PrismaModule } from './database/prisma.module';
 import { BookModule } from './modules/book/book.module';
+import { CoaModule } from './modules/coa/coa.module';
 
 /**
  * Root module of the application that configures global settings and imports all feature modules
@@ -48,6 +49,7 @@ import { BookModule } from './modules/book/book.module';
     MailerModule,
     PrismaModule,
     BookModule,
+    CoaModule,
   ],
   controllers: [],
   providers: [AppLogger],
