@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
-import { CreateCoaDto } from '../coa.dto';
+import { CreateCoaDto, UpdateCoaDto } from '../coa.dto';
 import { BookService } from 'src/modules/book/services/book.service';
 import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enum';
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
@@ -194,6 +194,35 @@ export class CoaService {
           parentId: dto.parent_id,
         },
       });
+    });
+  }
+
+  /**
+   * Update an existing account (Chart of Account).
+   *
+   * @param {string} id - Account ID to update
+   * @param {UpdateCoaDto} data - Updated account data
+   */
+  async updateCoa(userId: string, id: string, data: UpdateCoaDto) {
+    await this.checkCoaAccess(userId, data.book_id);
+    const coa = await this.prisma.account.findUnique({
+      where: { id },
+    });
+    if (!coa) {
+      throw throwException(
+        ForbiddenException,
+        ExceptionMessage.DATA_NOT_FOUND,
+        ExceptionCode.DATA_NOT_FOUND,
+      );
+    }
+
+    return await this.prisma.account.update({
+      where: { id },
+      data: {
+        name: data.name,
+        description: data.description,
+        isActive: data.is_active,
+      },
     });
   }
 

@@ -49,3 +49,19 @@ export class CreateCoaDto {
   @IsOptional()
   position?: AccountPosition;
 }
+
+export class UpdateCoaDto {
+  @IsUUID()
+  book_id: string;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  is_active?: boolean;
+}

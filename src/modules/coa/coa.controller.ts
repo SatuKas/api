@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { Routes } from 'src/common/enums/routes/routes.enum';
@@ -13,7 +14,7 @@ import { ResponseData } from 'src/types/api-response.type';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CoaDetailResponse, CoaListResponse } from './coa.response';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
-import { CreateCoaDto } from './coa.dto';
+import { CreateCoaDto, UpdateCoaDto } from './coa.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
 @Controller(Routes.COA)
@@ -80,6 +81,38 @@ export class CoaController {
 
     return {
       message: SuccessMessage.CREATED,
+      data: response,
+    };
+  }
+
+  @Put(':id')
+  @ApiOkResponse({
+    description: 'Updated',
+    type: CoaDetailResponse,
+  })
+  async updateCoa(
+    @CurrentUser('sub') userId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdateCoaDto,
+  ): Promise<ResponseData<CoaDetailResponse>> {
+    const coa = await this.coaService.updateCoa(userId, id, dto);
+
+    const response = {
+      id: coa.id,
+      name: coa.name,
+      description: coa.description,
+      is_active: coa.isActive,
+      is_parent_group: coa.isParentGroup,
+      parent_id: coa.parentId,
+      level: coa.level,
+      currency: coa.currency,
+      position: coa.position,
+      type: coa.type,
+      category: coa.category,
+    };
+
+    return {
+      message: SuccessMessage.UPDATED,
       data: response,
     };
   }
