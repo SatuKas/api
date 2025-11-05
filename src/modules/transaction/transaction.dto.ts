@@ -1,7 +1,9 @@
+import { BookModule, JournalType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -35,8 +37,19 @@ export class CreateTransactionEntryDto {
   @IsString()
   description: string;
 
+  @Type(() => Date)
   @IsDate()
   date: Date;
+
+  @IsEnum(JournalType)
+  type: JournalType;
+
+  @IsEnum(BookModule)
+  ref_type: BookModule;
+
+  @IsString()
+  @IsOptional()
+  ref_id?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { BookModule } from '@prisma/client';
+import { JournalType } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export class TransactionEntryResponse {
-  @ApiProperty({ example: 'uuid-entry-123' })
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
 
   @ApiProperty({
     example: {
-      id: 'uuid-account-123',
+      id: '123e4567-e89b-12d3-a456-426614174000',
       name: 'Kas',
       code: '101',
     },
@@ -18,33 +21,36 @@ export class TransactionEntryResponse {
   };
 
   @ApiProperty({ example: 10000, nullable: true })
-  debit: number | null;
+  debit: Decimal | null;
 
   @ApiProperty({ example: 0, nullable: true })
-  credit: number | null;
+  credit: Decimal | null;
 
   @ApiProperty({ example: 10000 })
-  amount: number;
+  amount: Decimal;
 }
 
 export class TransactionResponse {
-  @ApiProperty({
-    description: 'The ID of the transaction',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
 
-  @ApiProperty({
-    description: 'The description of the transaction',
-    example: 'Pembelian buku',
-  })
+  @ApiProperty({ example: 'Pembelian buku' })
   description: string | null;
 
-  @ApiProperty({
-    description: 'Date of transaction',
-    example: '',
-  })
-  date: string;
+  @ApiProperty({ example: new Date().toISOString() })
+  date: Date;
+
+  @ApiProperty({ example: JournalType.GENERAL })
+  type: JournalType;
+
+  @ApiProperty({ example: BookModule.INCOME })
+  ref_type: BookModule;
+
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  ref_id: string | null;
+
+  @ApiProperty({ example: new Decimal(10000) })
+  total_amount: Decimal;
 
   @ApiProperty({ type: () => [TransactionEntryResponse] })
   entries: TransactionEntryResponse[];

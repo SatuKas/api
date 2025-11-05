@@ -23,10 +23,10 @@ export class TransactionController {
 
   @Post(Routes.TRANSACTION_ENTRY)
   @ApiCreatedResponse({
-    description: 'Fetched',
+    description: 'Created',
     type: TransactionResponse,
   })
-  async postJournalEntryByBookId(
+  async createTransactionEntry(
     @CurrentUser('sub') userId: string,
     @Body() dto: CreateTransactionEntryDto,
   ): Promise<ResponseData<TransactionResponse>> {
@@ -36,14 +36,28 @@ export class TransactionController {
     );
 
     const response = {
-      id: '',
-      description: '',
-      date: Date.now().toString(),
-      entries: [],
+      id: transaction.id,
+      description: transaction.description,
+      date: transaction.date,
+      type: transaction.type,
+      ref_type: transaction.refType,
+      ref_id: transaction.refId,
+      total_amount: transaction.totalAmount,
+      entries: transaction.entries.map((entry) => ({
+        id: entry.id,
+        account: {
+          id: entry.account.id,
+          name: entry.account.name,
+          code: entry.account.code,
+        },
+        position: entry.position,
+        debit: entry.debit,
+        credit: entry.credit,
+        amount: entry.amount,
+      })),
     };
-
     return {
-      message: SuccessMessage.FETCHED,
+      message: SuccessMessage.CREATED,
       data: response,
     };
   }
