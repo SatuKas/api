@@ -15,28 +15,6 @@ export class CoaService {
   ) {}
 
   /**
-   * Checks if a user has access to a specific Chart of Account
-   *
-   * @param userId - The ID of the user requesting access
-   * @param bookId - The ID of the book containing the COA
-   * @throws ForbiddenException if user doesn't have access to the book
-   */
-  private async checkCoaAccess(userId: string, bookId: string) {
-    const { hasAccess } = await this.bookService.checkBookAccess(
-      userId,
-      bookId,
-    );
-
-    if (!hasAccess) {
-      throw throwException(
-        ForbiddenException,
-        ExceptionMessage.FORBIDDEN_ACCESS,
-        ExceptionCode.FORBIDDEN_ACCESS,
-      );
-    }
-  }
-
-  /**
    * Validates if a parent account exists and is accessible
    *
    * @param parentId - The ID of the parent account to validate
@@ -129,7 +107,7 @@ export class CoaService {
    * @throws ForbiddenException if user doesn't have access to the book
    */
   async getAllCoaByBookId(userId: string, bookId: string) {
-    await this.checkCoaAccess(userId, bookId);
+    await this.bookService.validateBookAccess(userId, bookId);
 
     return await this.prisma.account.findMany({
       where: {
@@ -162,7 +140,7 @@ export class CoaService {
    * @throws ForbiddenException if account code already exists in the book
    */
   async createCoa(userId: string, dto: CreateCoaDto) {
-    await this.checkCoaAccess(userId, dto.book_id);
+    await this.bookService.validateBookAccess(userId, dto.book_id);
     await this.validateCode(dto.code, dto.book_id);
 
     return this.prisma.$transaction(async (prisma) => {
@@ -204,7 +182,7 @@ export class CoaService {
    * @param {UpdateCoaDto} data - Updated account data
    */
   async updateCoa(userId: string, id: string, data: UpdateCoaDto) {
-    await this.checkCoaAccess(userId, data.book_id);
+    await this.bookService.validateBookAccess(userId, data.book_id);
     const coa = await this.prisma.account.findUnique({
       where: { id },
     });
