@@ -146,4 +146,21 @@ export class BookService {
 
     return { hasAccess: false, role: null, book: null };
   }
+
+  /**
+   * Validates if a user has access to a specific book
+   * @param userId - The ID of the user to validate access for
+   * @param bookId - The ID of the book to validate access for
+   * @throws ForbiddenException if the user does not have access to the book
+   */
+  async validateBookAccess(userId: string, bookId: string) {
+    const { hasAccess } = await this.checkBookAccess(userId, bookId);
+    if (!hasAccess) {
+      throw throwException(
+        ForbiddenException,
+        ExceptionMessage.FORBIDDEN_ACCESS,
+        ExceptionCode.FORBIDDEN_ACCESS,
+      );
+    }
+  }
 }

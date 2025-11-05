@@ -27,4 +27,8 @@ export enum Routes {
 
   // COA
   COA = 'accounts',
+
+  // Transaction
+  TRANSACTION = 'transactions',
+  TRANSACTION_ENTRY = 'entry',
 }

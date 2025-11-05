@@ -15,6 +15,7 @@ import { MailerModule } from './shared/mailer/mailer.module';
 import { PrismaModule } from './database/prisma.module';
 import { BookModule } from './modules/book/book.module';
 import { CoaModule } from './modules/coa/coa.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
 /**
  * Root module of the application that configures global settings and imports all feature modules
@@ -50,6 +51,7 @@ import { CoaModule } from './modules/coa/coa.module';
     PrismaModule,
     BookModule,
     CoaModule,
+    TransactionModule,
   ],
   controllers: [],
   providers: [AppLogger],
