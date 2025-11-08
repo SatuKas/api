@@ -1,18 +1,24 @@
 import { SuccessCode } from '../enums/response-code/success-code.enum';
 import { SuccessMessage } from '../enums/message/success-message.enum';
-import { ApiResponse, ResponseStatus } from 'src/types/api-response.type';
+import {
+  ApiResponse,
+  ExtraDataResponse,
+  ResponseStatus,
+} from 'src/types/api-response.type';
 
 export class SuccessResponseMapper {
   static mapSuccess<T>(
     data: T,
     message: SuccessMessage,
     code?: SuccessCode,
+    extra_data?: ExtraDataResponse,
   ): ApiResponse<T> {
     return {
       status: ResponseStatus.SUCCESS,
       code: code ?? SuccessCode.OK,
       message: message || this.getDefaultMessage(code ?? SuccessCode.OK),
       data,
+      extra_data,
     };
   }
 

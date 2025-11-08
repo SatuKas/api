@@ -31,4 +31,9 @@ export enum Routes {
   // Transaction
   TRANSACTION = 'transactions',
   TRANSACTION_ENTRY = 'entry',
+
+  // Journal
+  JOURNAL = 'journals',
+  JOURNAL_DETAIL = ':journal_id',
+  JOURNAL_DELETE = ':journal_id',
 }
