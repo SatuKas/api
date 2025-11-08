@@ -37,6 +37,7 @@ export class TransformInterceptor<T>
           data?.data,
           data?.message,
           data?.code,
+          data?.extra_data,
         );
       }),
     );
