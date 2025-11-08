@@ -16,6 +16,7 @@ import { PrismaModule } from './database/prisma.module';
 import { BookModule } from './modules/book/book.module';
 import { CoaModule } from './modules/coa/coa.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { JournalModule } from './modules/journal/journal.module';
 
 /**
  * Root module of the application that configures global settings and imports all feature modules
@@ -52,6 +53,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     BookModule,
     CoaModule,
     TransactionModule,
+    JournalModule,
   ],
   controllers: [],
   providers: [AppLogger],
