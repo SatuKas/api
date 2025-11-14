@@ -36,4 +36,10 @@ export enum Routes {
   JOURNAL = 'journals',
   JOURNAL_DETAIL = ':journal_id',
   JOURNAL_DELETE = ':journal_id',
+
+  // Report
+  REPORT = 'reports',
+  REPORT_CASHFLOW = 'cashflow',
+  REPORT_LEDGER = 'ledger',
+  REPORT_BALANCE_SHEET = 'balance-sheet',
 }

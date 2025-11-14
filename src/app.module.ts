@@ -17,6 +17,7 @@ import { BookModule } from './modules/book/book.module';
 import { CoaModule } from './modules/coa/coa.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { JournalModule } from './modules/journal/journal.module';
+import { ReportModule } from './modules/report/report.module';
 
 /**
  * Root module of the application that configures global settings and imports all feature modules
@@ -54,6 +55,7 @@ import { JournalModule } from './modules/journal/journal.module';
     CoaModule,
     TransactionModule,
     JournalModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [AppLogger],
