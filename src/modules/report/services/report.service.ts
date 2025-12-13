@@ -11,8 +11,17 @@ import { BookService } from 'src/modules/book/services/book.service';
 import { PaginationQuery } from 'src/types/api-query.type';
 import { paginateData } from 'src/shared/utils/pagination.util';
 import { Decimal } from '@prisma/client/runtime/library';
-import { LedgerReportResponse, LedgerEntryResponse } from '../report.response';
-import { LedgerReportFilter } from '../report.interface';
+import {
+  LedgerReportResponse,
+  LedgerEntryResponse,
+  BalanceSheetReportResponse,
+  BalanceSheetAccountResponse,
+} from '../report.response';
+import {
+  LedgerReportFilter,
+  BalanceSheetReportFilter,
+} from '../report.interface';
+import { AccountCategory, AccountType } from '@prisma/client';
 
 @Injectable()
 export class ReportService {
@@ -207,5 +216,181 @@ export class ReportService {
     };
 
     return paginateData(Promise.resolve([response, totalEntries]), pagination);
+  }
+
+  async getBalanceSheetReportByBookId(
+    bookId: string,
+    userId: string,
+    filter: BalanceSheetReportFilter,
+  ) {
+    await this.bookService.validateBookAccess(userId, bookId);
+
+    const reportDate = filter.date || new Date();
+
+    // Get all balance sheet accounts (Asset, Liability, Equity) that are active and not parent
+    const accounts = await this.prisma.account.findMany({
+      where: {
+        bookId,
+        category: {
+          in: [
+            AccountCategory.ASSET,
+            AccountCategory.LIABILITY,
+            AccountCategory.EQUITY,
+          ],
+        },
+        isActive: true,
+        isParentGroup: false,
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        category: true,
+        type: true,
+        position: true,
+      },
+      orderBy: [
+        {
+          category: 'asc',
+        },
+        {
+          type: 'asc',
+        },
+        {
+          code: 'asc',
+        },
+      ],
+    });
+
+    // Get opening balances for all accounts before report date
+    const accountIds = accounts.map((acc) => acc.id);
+    const openingBalances = await this.prisma.accountOpeningBalance.findMany({
+      where: {
+        bookId,
+        accountId: {
+          in: accountIds,
+        },
+        date: {
+          lt: reportDate,
+        },
+      },
+    });
+
+    // Create map of opening balances by accountId
+    const openingBalanceMap = new Map<string, Decimal>();
+    openingBalances.forEach((balance) => {
+      const existing =
+        openingBalanceMap.get(balance.accountId) || new Decimal(0);
+      openingBalanceMap.set(balance.accountId, existing.plus(balance.amount));
+    });
+
+    // Get journal entries for all accounts up to report date
+    const journalEntries = await this.prisma.journalEntry.findMany({
+      where: {
+        accountId: {
+          in: accountIds,
+        },
+        journal: {
+          bookId,
+          date: {
+            lte: reportDate,
+          },
+        },
+      },
+      select: {
+        accountId: true,
+        debit: true,
+        credit: true,
+      },
+    });
+
+    // Calculate balance for each account
+    const accountBalanceMap = new Map<string, Decimal>();
+    accounts.forEach((account) => {
+      const openingBalance =
+        openingBalanceMap.get(account.id) || new Decimal(0);
+      let balance = openingBalance;
+
+      // Sum all journal entries for this account
+      const entries = journalEntries.filter((e) => e.accountId === account.id);
+      entries.forEach((entry) => {
+        const debit = entry.debit || new Decimal(0);
+        const credit = entry.credit || new Decimal(0);
+
+        if (account.position === 'DEBIT') {
+          balance = balance.plus(debit).minus(credit);
+        } else {
+          balance = balance.minus(debit).plus(credit);
+        }
+      });
+
+      accountBalanceMap.set(account.id, balance);
+    });
+
+    // Group accounts by category and type
+    const assets = {
+      currentAssets: [] as BalanceSheetAccountResponse[],
+      fixedAssets: [] as BalanceSheetAccountResponse[],
+      totalAssets: new Decimal(0),
+    };
+
+    const liabilities = {
+      currentLiabilities: [] as BalanceSheetAccountResponse[],
+      totalLiabilities: new Decimal(0),
+    };
+
+    const equity = {
+      equityAccounts: [] as BalanceSheetAccountResponse[],
+      totalEquity: new Decimal(0),
+    };
+
+    accounts.forEach((account) => {
+      const balance = accountBalanceMap.get(account.id) || new Decimal(0);
+      const accountData: BalanceSheetAccountResponse = {
+        code: account.code,
+        name: account.name,
+        balance,
+      };
+
+      if (account.category === AccountCategory.ASSET) {
+        if (account.type === AccountType.CRAS) {
+          assets.currentAssets.push(accountData);
+        } else if (account.type === AccountType.FXAS) {
+          assets.fixedAssets.push(accountData);
+        }
+        // Add to total assets regardless of type
+        assets.totalAssets = assets.totalAssets.plus(balance);
+      } else if (account.category === AccountCategory.LIABILITY) {
+        if (account.type === AccountType.CRLI) {
+          liabilities.currentLiabilities.push(accountData);
+        }
+        // Add to total liabilities regardless of type
+        liabilities.totalLiabilities =
+          liabilities.totalLiabilities.plus(balance);
+      } else if (account.category === AccountCategory.EQUITY) {
+        equity.equityAccounts.push(accountData);
+        equity.totalEquity = equity.totalEquity.plus(balance);
+      }
+    });
+
+    // Calculate check
+    const liabilitiesPlusEquity = liabilities.totalLiabilities.plus(
+      equity.totalEquity,
+    );
+    const isBalanced = assets.totalAssets.equals(liabilitiesPlusEquity);
+
+    const response: BalanceSheetReportResponse = {
+      date: reportDate,
+      assets,
+      liabilities,
+      equity,
+      check: {
+        assets: assets.totalAssets,
+        liabilitiesPlusEquity,
+        isBalanced,
+      },
+    };
+
+    return response;
   }
 }

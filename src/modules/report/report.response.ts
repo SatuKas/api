@@ -55,3 +55,69 @@ export class LedgerReportResponse {
   @ApiProperty({ example: new Decimal(650000) })
   closingBalance: Decimal;
 }
+
+export class BalanceSheetAccountResponse {
+  @ApiProperty({ example: '1.01.001' })
+  code: string;
+
+  @ApiProperty({ example: 'Kas' })
+  name: string;
+
+  @ApiProperty({ example: new Decimal(12500000) })
+  balance: Decimal;
+}
+
+export class BalanceSheetAssetsResponse {
+  @ApiProperty({ type: () => [BalanceSheetAccountResponse] })
+  currentAssets: BalanceSheetAccountResponse[];
+
+  @ApiProperty({ type: () => [BalanceSheetAccountResponse] })
+  fixedAssets: BalanceSheetAccountResponse[];
+
+  @ApiProperty({ example: new Decimal(35500000) })
+  totalAssets: Decimal;
+}
+
+export class BalanceSheetLiabilitiesResponse {
+  @ApiProperty({ type: () => [BalanceSheetAccountResponse] })
+  currentLiabilities: BalanceSheetAccountResponse[];
+
+  @ApiProperty({ example: new Decimal(5000000) })
+  totalLiabilities: Decimal;
+}
+
+export class BalanceSheetEquityResponse {
+  @ApiProperty({ type: () => [BalanceSheetAccountResponse] })
+  equityAccounts: BalanceSheetAccountResponse[];
+
+  @ApiProperty({ example: new Decimal(30000000) })
+  totalEquity: Decimal;
+}
+
+export class BalanceSheetCheckResponse {
+  @ApiProperty({ example: new Decimal(35500000) })
+  assets: Decimal;
+
+  @ApiProperty({ example: new Decimal(35000000) })
+  liabilitiesPlusEquity: Decimal;
+
+  @ApiProperty({ example: false })
+  isBalanced: boolean;
+}
+
+export class BalanceSheetReportResponse {
+  @ApiProperty({ example: '2025-01-31' })
+  date: Date;
+
+  @ApiProperty({ type: () => BalanceSheetAssetsResponse })
+  assets: BalanceSheetAssetsResponse;
+
+  @ApiProperty({ type: () => BalanceSheetLiabilitiesResponse })
+  liabilities: BalanceSheetLiabilitiesResponse;
+
+  @ApiProperty({ type: () => BalanceSheetEquityResponse })
+  equity: BalanceSheetEquityResponse;
+
+  @ApiProperty({ type: () => BalanceSheetCheckResponse })
+  check: BalanceSheetCheckResponse;
+}

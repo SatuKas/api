@@ -11,10 +11,16 @@ import {
 } from '@nestjs/common';
 import { Routes } from 'src/common/enums/routes/routes.enum';
 import { ReportService } from './services/report.service';
-import { LedgerReportFilter } from './report.interface';
+import {
+  BalanceSheetReportFilter,
+  LedgerReportFilter,
+} from './report.interface';
 import { ResponseData } from 'src/types/api-response.type';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { LedgerReportResponse } from './report.response';
+import {
+  BalanceSheetReportResponse,
+  LedgerReportResponse,
+} from './report.response';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/decorators/pagination.decorator';
@@ -64,6 +70,32 @@ export class ReportController {
       message: SuccessMessage.FETCHED,
       data,
       extra_data,
+    };
+  }
+
+  @Get(Routes.REPORT_BALANCE_SHEET)
+  @ApiOkResponse({
+    description: 'Fetched balance sheet report',
+    type: BalanceSheetReportResponse,
+  })
+  async getBalanceSheetReportByBookId(
+    @CurrentUser('sub') userId: string,
+    @Query('book_id') bookId: string,
+    @Query('date') date?: string,
+  ): Promise<ResponseData<BalanceSheetReportResponse>> {
+    const filter: BalanceSheetReportFilter = {
+      date: date ? new Date(date) : undefined,
+    };
+
+    const response = await this.reportService.getBalanceSheetReportByBookId(
+      bookId,
+      userId,
+      filter,
+    );
+
+    return {
+      message: SuccessMessage.FETCHED,
+      data: response,
     };
   }
 }
