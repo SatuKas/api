@@ -27,6 +27,7 @@ export enum Routes {
 
   // COA
   COA = 'accounts',
+  COA_PAGINATED = 'paginated',
 
   // Transaction
   TRANSACTION = 'transactions',

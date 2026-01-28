@@ -6,6 +6,8 @@ import { ExceptionCode } from 'src/common/enums/response-code/exception-code.enu
 import { ExceptionMessage } from 'src/common/enums/message/exception-message.enum';
 import throwException from 'src/shared/exception/throw.exception';
 import { AccountTypeMapper } from 'src/common/mappers/account-type.mapper';
+import { PaginationQuery } from 'src/types/api-query.type';
+import { paginateData } from 'src/shared/utils/pagination.util';
 
 @Injectable()
 export class CoaService {
@@ -128,6 +130,55 @@ export class CoaService {
         parentId: true,
       },
     });
+  }
+
+  /**
+   * Retrieves paginated Chart of Accounts for a specific book
+   *
+   * @param userId - The ID of the user requesting the accounts
+   * @param bookId - The ID of the book containing the accounts
+   * @param pagination - Pagination query parameters
+   * @returns Array of accounts with selected fields
+   * @throws ForbiddenException if user doesn't have access to the book
+   */
+  async getAllCoaPaginatedByBookId(
+    userId: string,
+    bookId: string,
+    pagination: PaginationQuery,
+  ) {
+    await this.bookService.validateBookAccess(userId, bookId);
+
+    return paginateData(
+      Promise.all([
+        this.prisma.account.findMany({
+          skip: pagination.skip,
+          take: pagination.take,
+          where: {
+            bookId,
+          },
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            description: true,
+            isActive: true,
+            isParentGroup: true,
+            level: true,
+            currency: true,
+            position: true,
+            type: true,
+            category: true,
+            parentId: true,
+          },
+        }),
+        this.prisma.account.count({
+          where: {
+            bookId,
+          },
+        }),
+      ]),
+      pagination,
+    );
   }
 
   /**

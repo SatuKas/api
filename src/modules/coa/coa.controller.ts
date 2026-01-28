@@ -16,6 +16,8 @@ import { CoaDetailResponse, CoaListResponse } from './coa.response';
 import { SuccessMessage } from 'src/common/enums/message/success-message.enum';
 import { CreateCoaDto, UpdateCoaDto } from './coa.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { QueryPagination } from 'src/common/decorators/pagination.decorator';
+import { PaginationQuery } from 'src/types/api-query.type';
 
 @Controller(Routes.COA)
 export class CoaController {
@@ -51,6 +53,46 @@ export class CoaController {
     return {
       message: SuccessMessage.FETCHED,
       data: response,
+    };
+  }
+
+  @Get(Routes.COA_PAGINATED)
+  @ApiOkResponse({
+    description: 'Fetched',
+    type: CoaListResponse,
+    isArray: true,
+  })
+  async getAllCoaPaginatedByBookId(
+    @CurrentUser('sub') userId: string,
+    @Query('book_id') bookId: string,
+    @QueryPagination() pagination: PaginationQuery,
+  ): Promise<ResponseData<CoaListResponse[]>> {
+    const { data: coaData, extra_data } =
+      await this.coaService.getAllCoaPaginatedByBookId(
+        userId,
+        bookId,
+        pagination,
+      );
+
+    const response = coaData.map((coa) => ({
+      id: coa.id,
+      name: coa.name,
+      code: coa.code,
+      description: coa.description,
+      is_active: coa.isActive,
+      is_parent_group: coa.isParentGroup,
+      parent_id: coa.parentId,
+      level: coa.level,
+      currency: coa.currency,
+      position: coa.position,
+      type: coa.type,
+      category: coa.category,
+    }));
+
+    return {
+      message: SuccessMessage.FETCHED,
+      data: response,
+      extra_data,
     };
   }
 
