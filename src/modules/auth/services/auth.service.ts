@@ -6,7 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 import { PrismaService } from 'src/database/prisma.service';
 import {
   ForgotPasswordDto,
@@ -52,7 +52,7 @@ export class AuthService {
     user_agent: string;
     device_id?: string;
   }) {
-    const deviceId = uuidv4();
+    const deviceId = uuidv7();
 
     const device = await this.authDeviceService.getDeviceById(
       payload.device_id || deviceId,
