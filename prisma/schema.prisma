@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid(7))
   email     String   @unique
   password  String
   name      String
@@ -32,7 +32,7 @@ model User {
 }
 
 model Device {
-  id           String   @id @default(uuid())
+  id           String   @id @default(uuid(7))
   user         User     @relation(fields: [userId], references: [id])
   userId       String   @map("user_id")
   userAgent    String   @map("user_agent")
@@ -45,9 +45,49 @@ model Device {
   @@map("device")
 }
 
+model Feature {
+  id        String @id @default(uuid(7))
+  code      String @unique
+  name      String
+  type      String // RECORDING | REPORT | MASTER
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  templates TemplateFeature[]
+
+  @@map("feature")
+}
+
+// Template is a template for a book
+model Template {
+  id          String @id @default(uuid(7))
+  code        String @unique
+  name        String
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  features TemplateFeature[]
+
+  @@map("template")
+}
+
+model TemplateFeature {
+  id         String @id @default(uuid(7))
+  templateId String
+  featureId  String
+  config     Json?
+
+  template Template @relation(fields: [templateId], references: [id])
+  feature  Feature  @relation(fields: [featureId], references: [id])
+
+  @@unique([templateId, featureId])
+}
+
 // Book is a collection of financial data for a specific purpose
 model Book {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   name String
   description String?
   ownerId String @map("owner_id")
@@ -65,7 +105,7 @@ model Book {
 
 // BookMember is a user who has access to a book
 model BookMember {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   bookId String @map("book_id")
   book Book @relation(fields: [bookId], references: [id])
   userId String @map("user_id")
@@ -85,7 +125,7 @@ model BookMember {
 
 // BookSetting is a setting for a book
 model BookSetting {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   bookId String @map("book_id")
   book Book @relation(fields: [bookId], references: [id])
   currency String @default("IDR")
@@ -98,7 +138,7 @@ model BookSetting {
 }
 
 model Account {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   bookId String @map("book_id")
   book Book @relation(fields: [bookId], references: [id])
   name String
@@ -128,7 +168,7 @@ model Account {
 }
 
 model AccountOpeningBalance {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   accountId String @map("account_id")
   account Account @relation(fields: [accountId], references: [id])
   bookId String @map("book_id")
@@ -146,7 +186,7 @@ model AccountOpeningBalance {
 }
 
 model Journal {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   bookId String @map("book_id")
   book Book @relation(fields: [bookId], references: [id])
   date DateTime
@@ -165,7 +205,7 @@ model Journal {
 }
 
 model JournalEntry {
-  id String @id @default(uuid())
+  id String @id @default(uuid(7))
   journalId String @map("journal_id")
   journal Journal @relation(fields: [journalId], references: [id])
   accountId String @map("account_id")
