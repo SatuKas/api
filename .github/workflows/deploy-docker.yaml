@@ -19,6 +19,8 @@ jobs:
   release-dev-docker:
     runs-on: ubuntu-latest
     environment: deploy-dev
+    env:
+      VPS_DOCKER_DIR: /home/${{ secrets.VPS_USER }}/satukas-api-docker
 
     steps:
       - name: Checkout repository
@@ -48,6 +50,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      - name: Prepare deploy directory on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: mkdir -p ${{ env.VPS_DOCKER_DIR }}
+
       - name: Upload docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -55,8 +66,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
-          source: 'docker-compose.prod.yml'
-          target: '/home/satukas-dev/satukas-api-docker'
+          source: docker-compose.prod.yml
+          target: ${{ env.VPS_DOCKER_DIR }}/
 
       - name: Deploy container on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -66,8 +77,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            mkdir -p /home/satukas-dev/satukas-api-docker
-            cd /home/satukas-dev/satukas-api-docker
+            cd ${{ env.VPS_DOCKER_DIR }}
 
             cat > .env <<'EOF'
             ${{ secrets.ENV_DEV }}
