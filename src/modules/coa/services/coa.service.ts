@@ -155,6 +155,18 @@ export class CoaService {
           take: pagination.take,
           where: {
             bookId,
+            OR: [
+              {
+                name: {
+                  contains: pagination.search,
+                },
+              },
+              {
+                code: {
+                  contains: pagination.search,
+                },
+              },
+            ],
           },
           select: {
             id: true,
