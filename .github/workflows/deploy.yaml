@@ -1,9 +1,10 @@
 name: Build and Deploy to VPS
 
 on:
-  push:
-    branches:
-      - dev # Ganti dengan branch lo kalau beda
+  # push:
+  #   branches:
+  #     - dev
+  workflow_dispatch:
 
 permissions:
   contents: write
