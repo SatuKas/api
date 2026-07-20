@@ -235,7 +235,7 @@ Pushing images from CI uses `GITHUB_TOKEN` (`packages: write` is already set in 
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 
-mkdir -p /home/satukas-dev/satukas-api-docker
+mkdir -p /home/<vps-user>/satukas-api-docker
 ```
 
 After the first successful workflow run, the `satukas-api` container runs on port `5000` (or whatever `PORT` is set to in `.env`).
