@@ -225,6 +225,7 @@ Add these under **Settings → Secrets and variables → Actions** (environment 
 | `VPS_SSH_KEY` | SSH private key |
 | `ENV_DEV` | Full production `.env` contents (multi-line) |
 | `GHCR_TOKEN` | GitHub PAT with `read:packages` scope (for pulling images on the VPS) |
+| `GHCR_USERNAME` | Optional GHCR username override. Defaults to the GitHub Actions actor. |
 
 Pushing images from CI uses `GITHUB_TOKEN` (`packages: write` is already set in the workflow).
 
@@ -243,7 +244,7 @@ After the first successful workflow run, the `satukas-api` container runs on por
 #### Pull image manually from GHCR
 
 ```bash
-echo "<GHCR_TOKEN>" | docker login ghcr.io -u <github-username> --password-stdin
+echo "<GHCR_TOKEN>" | docker login ghcr.io -u <ghcr-username> --password-stdin
 docker pull ghcr.io/<owner>/<repo>:dev
 ```
 
