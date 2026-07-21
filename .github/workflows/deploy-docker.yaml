@@ -13,7 +13,6 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   release-dev-docker:
@@ -26,6 +25,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set deploy variables
+        id: vars
+        run: |
+          IMAGE_NAME=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          echo "docker_image=${{ env.REGISTRY }}/$IMAGE_NAME:dev" >> $GITHUB_OUTPUT
+          echo "ghcr_user=${GHCR_USERNAME:-${{ github.actor }}}" >> $GITHUB_OUTPUT
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -37,7 +46,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.vars.outputs.image_name }}
           tags: |
             type=raw,value=dev,enable=true
             type=sha,prefix=dev-
@@ -47,7 +56,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.vars.outputs.docker_image }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Prepare deploy directory on VPS
@@ -83,9 +92,9 @@ jobs:
             ${{ secrets.ENV_DEV }}
             EOF
 
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ steps.vars.outputs.ghcr_user }}" --password-stdin
 
-            export DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
+            export DOCKER_IMAGE="${{ steps.vars.outputs.docker_image }}"
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
