@@ -10,6 +10,7 @@ export interface JwtTokenPayload {
 export interface LogoutPayload {
   device_id: string;
   user_id?: string;
+  token?: string;
 }
 
 export interface RegisterAuthDevicePayload {
