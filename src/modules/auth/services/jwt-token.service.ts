@@ -119,7 +119,7 @@ export class JwtTokenService {
       `bl:${token}`,
       '1',
       'EX',
-      this.getExpiresIn(AuthEnum.JWT_EXPIRES_IN),
+      this.getExpiresIn(AuthEnum.JWT_EXPIRES_IN) / 1000,
     );
   }
 

@@ -203,6 +203,8 @@ export class AuthService {
       payload.device_id,
       payload.user_id,
     );
+
+    if (payload.token) await this.jwtTokenService.revokeToken(payload.token);
   }
 
   private getRedirectPathUrl(token: string, type: AuthJwtType) {

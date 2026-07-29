@@ -104,12 +104,14 @@ export class AuthController {
 
   @Post(Routes.AUTH_LOGOUT)
   async logout(
+    @Req() req,
     @CurrentUser('sub') userId: string,
     @CurrentUser('device_id') deviceId: string,
   ): Promise<ResponseData<null>> {
     await this.authService.logout({
       device_id: deviceId,
       user_id: userId,
+      token: req.headers.authorization.replace('Bearer ', ''),
     });
     return {
       message: SuccessMessage.LOGOUT_SUCCESS,
